@@ -1,61 +1,80 @@
-How to use: open a new chat inside the 25352_BBI project on claude.ai (so it can read our problem-framing notes), attach the files listed below, and paste everything under the line. Use Opus with high effort.
+How to use: open a new chat inside the 25352_BBI project on claude.ai (so it can read our problem-framing notes), attach the files listed below, and paste everything under the line. Use Opus with high effort. Whoever builds the deck can change anything in the "Team's story" part; the "Forecast pack" part is ready to drop in.
 
 Attach:
-1. `outputs/results.md` and `outputs/feature_selection.md` (created by the model run)
+1. `outputs/results.md` (created by the model run)
 2. A screenshot of the website map on a busy summer day, with the "57% / 2.8x chance" card visible (Cmd + Shift + 4 on Mac)
-3. Photos from the lab: my teammates working with the jellyfish (from them)
+3. Photos from the lab: the team working with jellyfish
 4. The website link: https://diegoa-ml.github.io/jelly-alert/
 
 ---
 
 Make a slide deck for our midterm pitch in DTU course 25352 Blue Bioeconomy Innovation (19 October). Hard limit: **3 minutes spoken**.
 
-**Audience.** Do not pitch to the teachers. Pitch as if the room is early-stage investors, coaches and mentors, potential customers (fishers, harvesters, buyers of jellyfish products) and other startups. They want to know: is the problem real and big, who pays, does it work, can this team do it, and what could kill it.
+## Audience
 
-**One company, two halves.** We are one team with one story. The forecast finds the jellyfish; the lab turns them into a product. The product is [PRODUCT: jellyfish fertilizer or jellyfish salt, teammates decide]. Do not present two projects. The link: anyone who wants to use jellyfish as a raw material has the same first problem, which is knowing where and when they will be. Jelly Alert solves sourcing; the lab solves what to make. The same forecast also helps fishers avoid them. Write every slide so it works whether the product is fertilizer or salt: use [PRODUCT] as the placeholder.
+Not the teachers. Pitch as if the room is early-stage investors, coaches and mentors, potential customers and other startups. They want to know: is the problem real, who pays, does it work, can this team do it, and what could kill it.
 
-**Required structure** (each one must be clearly present; the course requires all seven):
+## Required content
+
+The course requires all seven, clearly visible:
 1. Name of the product
 2. Problem statement, relevant to as many people as possible
-3. Who benefits and who is affected: specific, named stakeholders
+3. Who benefits and who is affected (specific stakeholders)
 4. The solution: how our approach works
-5. The value: in the hands of the people affected. Show both directions: bottom-up (fishers and harvesters use it and feed it with their own sightings) and top-down (authorities, municipalities, EU blue-bioeconomy programmes that want jellyfish blooms monitored and used)
+5. The value, in the hands of the people affected (bottom-up and top-down)
 6. Team and our ability to make it happen
 7. The open risk or unknown: the single biggest risk of our solution
 
-**Slides and time budget** (total 180 s; speaker notes must fit at about 130 words per minute, so about 390 words in total):
+## Part 1: The team's story (the team decides)
 
-| # | Slide | Time | Content |
-|---|---|---|---|
-| 1 | Name | 10 s | "Jelly Alert". One-line promise, e.g. "Know where jellyfish will be, days ahead. Then put them to use." Team names: [NAMES]. |
-| 2 | Problem | 30 s | Facts below. Make it relevant to many: fishers, swimmers and beaches, power-plant and aquaculture water intakes, and a growing jellyfish-product industry with no reliable supply. |
-| 3 | Who is affected | 20 s | Named stakeholders: Danish fishers and Danmarks Fiskeriforening; jellyfish harvesters and [PRODUCT] buyers [e.g. organic farms / food or salt buyers]; municipalities and beach operators; Fiskeristyrelsen and marine researchers. One line each on what they lose or gain. |
-| 4 | Solution | 30 s | Two-part visual: (a) forecast: public sightings + daily ocean and wind data, then a model, then a map 0 to 10 days ahead; (b) lab: harvested jellyfish, then [PROCESS, 1 line], then [PRODUCT]. One photo from the lab here. |
-| 5 | Live demo | 45 s | The slide shows only the link https://diegoa-ml.github.io/jelly-alert/ (large), a QR code to it, and under it the text "45-second live demonstration". Speaker notes = a demo script: pick Lion's mane, 2026; point at the headline card; press play; point at blue dots landing in purple water; switch to Moon jelly. Add a fallback line: if the internet fails, show the attached screenshot. |
-| 6 | Value | 20 s | Bottom-up and top-down, as described above. One line on why ours is cheap to run: public data only, no survey ship, no sensors, no need to find seabed polyp beds. |
-| 7 | Team | 15 s | Lab photos of my teammates working with jellyfish (they make this credible). Who does what: [NAME] forecast and data; [NAMES] [PRODUCT] lab work; [any domain contacts]. |
-| 8 | Risk and ask | 10 s | The biggest risk (below) and how we will test it next. End with one ask to the room: [e.g. "introductions to a fisher or harvester who will test it this season"]. |
+The team leads the pitch with its product. Current direction: **[PRODUCT, e.g. salt made from jellyfish]**. Leave every part of this open with [brackets] and short hints, and do not decide it for them:
+- [Product name]
+- [Problem we solve and for whom]
+- [How we make it: one line on the process] + lab photos
+- [Who buys it and why]
+- [Team: who does what] + lab photos (real people with real jellyfish make this credible)
+- [Biggest risk of the product: e.g. cost per kg, regulation, buyers]
+- [One ask to the room]
 
-Backup slides (not presented, for questions): A. How we compare with GoJelly. B. How we tested it (training vs test years, the calendar baseline, the feature selection on training years only). C. Limits.
+Propose a slide order and a time budget that adds up to 180 seconds, with the forecast taking about 50 to 60 seconds of it (one content slide plus the live demo). Suggest where the forecast fits best, but let the team move it.
 
-**Numbers: use only these, from the attached files.** If a number is missing, write `[NUMBER]`. Never round up and never invent.
-- The season check (strongest, easiest to understand): on each 2025 and 2026 test season, X of Y real sightings fell inside the 20% of water the map flagged 5 days earlier; a blind guess would catch 20%. Take X, Y and the percentages from `results.md` (currently 52% to 64%, about 2.5 to 3 times chance). Good wording: "The map flags one fifth of the water, and that fifth held more than half of the real sightings, in two seasons it had never seen."
-- AUC at 5 days ahead vs the calendar baseline, per species, from `results.md`. Moon jelly is clearly ahead of the calendar. For lion's mane the gain over the calendar is small: say so in the backup slide, and say that its value is mostly in where, not when.
+## Part 2: Forecast pack (ready to drop in)
+
+**Role in the story.** The forecast is a tool that supports the product: it tells the team where and when to catch jellyfish. Every business that uses wild jellyfish as a raw material has the same first problem, which is that blooms come and go and move with currents. Jelly Alert turns that into a map: where the jellyfish will be, up to 10 days ahead. Use it as an argument under "solution" (how we get our raw material), "value" (we harvest where they are, not by searching) and "risk" (supply is the risk; this reduces it). Do not let it take over the pitch.
+
+**Forecast slide (about 15 to 20 s).** Title suggestion: "We know where to catch them." Visual: the map screenshot. One big number from `results.md`: in both test seasons, the 20% of water the map flagged 5 days ahead held more than half of the real sightings (52% to 64%; a blind guess catches 20%). Under it, small: "Free public data. Tested on 2025 and 2026, seasons it never saw."
+
+**Live demo slide (45 s).** The slide shows only the link https://diegoa-ml.github.io/jelly-alert/ (large), a QR code to it, and the text "45-second live demonstration" under it. Speaker notes = demo script: pick Moon jelly, 2026; point at the headline card; press play; point at blue dots (real sightings) landing in purple water (predicted); switch to Lion's mane. Fallback: if the internet fails, show the screenshot.
+
+**Numbers: use only these, from `results.md`.** If a number is missing, write `[NUMBER]`. Never round up.
+- Season check per species and season: "X of Y real sightings in the flagged 20% of water."
+- AUC at 5 days ahead against a calendar-only guess: moon jelly is clearly ahead of the calendar; for lion's mane the gain is small, so the value there is mostly *where*, not *when*.
 - What the model leans on most: salinity and time of year. That fits the July 2026 reports linking early blooms to warm water and changed salinity.
 
-**Do not claim** (these are wrong, and investors will ask):
-- That beating the calendar by a few AUC points means "a day earlier". AUC measures how well it ranks places and days, not how early it is.
-- That it "cuts bloom problems by half". The season check shows where sightings fall, not damage avoided. Fine to say: "If you avoid the flagged fifth of the water, you would have avoided more than half of the encounters seen in those seasons, according to public sightings."
-- That we are more accurate than GoJelly. GoJelly has not published a validation against real sightings, so there is nothing to compare. Our edge is different: no need to know polyp beds, daily dates instead of monthly scenarios, tested on unseen seasons, two species, and it collects new sightings.
+**Do not claim:**
+- "A day earlier" because the AUC is higher. AUC measures ranking, not timing.
+- "Cuts bloom problems by half." The check shows where sightings fell, not damage avoided. Safe: "The flagged fifth of the water held more than half of the sightings."
+- More accurate than GoJelly (the EU Risk Map). GoJelly has not published a test against real sightings, so there is nothing to compare. Our edge: public data only, no need to find seabed polyp beds, a map for each day instead of monthly scenarios, tested on unseen seasons, two species, collects new sightings.
 
-**Facts for the problem slide** (use only these):
+**The forecast's own risk** (for the risk slide, if the team wants it): almost all public sightings come from the coast, while harvesting happens offshore. The model scores lower on open-water sightings. Our own catches and reports from fishers will test it where the boats are.
+
+**Optional problem facts** (use if they help the team's story):
 - Jellyfish blooms cost affected fisheries up to 25% of catch and up to 34% of catch value (Pitt et al. 2025; Shen et al. 2024).
-- Blooms move fast with currents and are usually noticed only after time, fuel and gear are committed.
 - July 2026: unusually early and heavy jellyfish occurrence across Danish waters, linked by KU researchers to record-warm water and changed salinity (DR, TV2, July 2026).
-- The free ocean data that can predict this already exists, but nobody turns it into a forecast for the people who need it.
 
-**The biggest risk** (slide 8): almost all public sightings come from the coast, while fishers and harvesters work offshore. The model scores lower on open-water sightings (see `results.md`), so how well it holds up where the boats are is the open question. How we test it: fishers and harvesters report sightings in the app this season, and we score the forecast on them. If [PRODUCT] has its own bigger risk (cost per kg, regulation, buyer demand), teammates add one line.
+## Part 3: The forecast is bigger than this pitch (backup slide, not presented)
 
-**Style.** Short text on slides: at most 3 lines of body text or one visual. The talking goes in the speaker notes. No em dashes. Plain, confident, specific. Big numbers on slides, explanations in the notes. Use the lab photos generously; real people with real jellyfish make this believable.
+One backup slide, "One forecast, many users", for questions from investors about scale. The same map, with no extra data, serves:
+- Jellyfish harvesters and processors (salt, fertilizer, food, collagen for cosmetics): where to source
+- Fishers: where to avoid, to protect catch, gear and fuel
+- Power plants, desalination and aquaculture: early warning for blocked water intakes and stung fish
+- Municipalities, beaches and tourism: swimmer warnings
+- Researchers and authorities: a tested, open bloom monitor that improves with every reported sighting
 
-At the end, give me the total spoken word count of the notes per slide and in total, and confirm it fits 3 minutes.
+Point: the forecast is a platform the product sits on, and it can earn on its own later.
+
+## Style
+
+Short text on slides: at most 3 lines of body text or one visual. The talking goes in the speaker notes, at about 130 words per minute (about 390 words in total). No em dashes. Plain, confident, specific. Big numbers on slides, explanations in the notes.
+
+At the end, give me the spoken word count per slide and in total, and confirm it fits 3 minutes.
