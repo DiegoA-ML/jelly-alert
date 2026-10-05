@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jelly Alert prototype</title>
+<meta name="description" content="Prototype: predicting where jellyfish will appear in Danish waters, days ahead, from public ocean and wind data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --petrol:#0f3d47; --petrol-2:#15505c; --ink:#f1f6f7; --muted:#a9c1c6;
+  --jelly-lo:#e9ddf7; --jelly-mid:#b07cd8; --jelly-hi:#5b1a8c;
+  --sighting:#1fc4d8; --report:#f3a53b; --line:rgba(241,246,247,.16); --chance:#7f979c;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font-family:"Barlow",system-ui,sans-serif;color:var(--ink);background:var(--petrol);
+  display:grid;grid-template-columns:360px 1fr;grid-template-rows:1fr auto;height:100vh}
+#panel{grid-row:1/3;overflow-y:auto;padding:22px 22px 28px;border-right:1px solid var(--line)}
+#map{grid-column:2;grid-row:1}
+#timeline{grid-column:2;grid-row:2;background:var(--petrol);padding:10px 18px 14px;border-top:1px solid var(--line)}
+h1{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:32px;margin:0;display:flex;align-items:baseline;gap:10px}
+.tag{font:500 12px "Barlow",system-ui,sans-serif;color:var(--petrol);background:var(--report);border-radius:3px;padding:2px 6px;position:relative;top:-4px}
+.sub{color:var(--muted);font-size:14px;margin:4px 0 14px;line-height:1.4}
+.explain{background:var(--petrol-2);border-radius:8px;padding:12px 14px;font-size:14px;line-height:1.45;margin-bottom:18px}
+.explain a{color:var(--ink);font-weight:600}
+.lbl{font-size:13px;color:var(--muted);margin:0 0 5px}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;margin-bottom:14px}
+.seg button{flex:1;padding:8px 6px;background:none;border:0;color:var(--muted);font:500 14px "Barlow",system-ui,sans-serif;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--petrol)}
+.day{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:38px;line-height:1;margin:10px 0 0}
+.issued{color:var(--muted);font-size:14px;margin:6px 0 16px}
+h2{font-size:15px;font-weight:600;margin:24px 0 8px}
+p.t{font-size:14px;line-height:1.5;margin:0 0 8px}
+p.t b{font-weight:600}
+.muted{color:var(--muted)}
+ol{margin:0;padding:0;list-style:none}
+ol li button{width:100%;display:flex;justify-content:space-between;padding:7px 0;background:none;border:0;
+  border-bottom:1px solid var(--line);color:var(--ink);font:400 14px "Barlow",system-ui,sans-serif;cursor:pointer;text-align:left}
+ol li button span:last-child{font-weight:600}
+.ramp{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--jelly-lo),var(--jelly-mid),var(--jelly-hi));margin:6px 0 4px}
+.ends{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.key{display:flex;align-items:center;gap:8px;font-size:14px;margin-top:8px}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--sighting);border:2px solid #fff;flex:none}
+.dia{width:11px;height:11px;background:var(--report);transform:rotate(45deg);border:1.5px solid #fff;flex:none}
+.toggle{display:flex;gap:8px;align-items:flex-start;font-size:14px;margin-top:12px;cursor:pointer;line-height:1.35}
+.toggle input{accent-color:var(--jelly-mid);width:16px;height:16px;margin:1px 0 0;flex:none}
+.bars{margin:10px 0 6px}
+.bar{display:grid;grid-template-columns:92px 1fr 44px;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+.bar .track{height:12px;background:rgba(241,246,247,.08);border-radius:0 4px 4px 0}
+.bar .fill{height:100%;border-radius:0 4px 4px 0}
+.bar .v{text-align:right;font-weight:600}
+.btn{display:block;width:100%;padding:10px;margin-top:10px;border-radius:6px;border:1px solid var(--ink);
+  background:none;color:var(--ink);font:500 15px "Barlow",system-ui,sans-serif;cursor:pointer}
+.btn.primary{background:var(--report);border-color:var(--report);color:#2b1a02}
+.btn[aria-pressed="true"]{outline:2px solid var(--report);outline-offset:2px}
+.note{font-size:13px;color:var(--muted);line-height:1.45;margin-top:8px}
+.foot{font-size:12px;color:var(--muted);line-height:1.5;margin-top:26px;border-top:1px solid var(--line);padding-top:14px}
+.foot a{color:var(--ink)}
+#tl-row{display:flex;align-items:center;gap:12px}
+#play{width:38px;height:38px;border-radius:50%;border:1px solid var(--ink);background:none;color:var(--ink);cursor:pointer;flex:none;font-size:14px}
+#spark{width:100%;height:56px;display:block;cursor:pointer}
+#slider{width:100%;margin:4px 0 0;accent-color:var(--jelly-mid)}
+.tl-legend{font-size:12px;color:var(--muted);margin-top:2px}
+:focus-visible{outline:2px solid var(--sighting);outline-offset:2px}
+.leaflet-container{background:#dfe9ec;font-family:"Barlow",sans-serif}
+.leaflet-popup-content{color:#0f3d47;font-size:14px}
+.leaflet-popup-content label{display:block;font-weight:500;margin-top:6px}
+.leaflet-popup-content select,.leaflet-popup-content input{width:100%;font:14px "Barlow",system-ui,sans-serif;padding:4px;margin-top:2px}
+.leaflet-popup-content button{margin-top:10px;width:100%;padding:7px;background:#0f3d47;color:#fff;border:0;border-radius:4px;font:500 14px "Barlow",system-ui,sans-serif;cursor:pointer}
+@media (max-width:820px){
+  body{grid-template-columns:1fr;grid-template-rows:60vh auto auto;height:auto}
+  #map{grid-column:1;grid-row:1;height:60vh}
+  #timeline{grid-column:1;grid-row:2}
+  #panel{grid-row:3;border-right:0;padding:18px 16px 28px}
+}
+</style>
+</head>
+<body>
+<aside id="panel">
+  <h1>Jelly Alert <span class="tag">Prototype</span></h1>
+  <p class="sub">Where jellyfish will be in Danish waters, days ahead: for fishers to avoid them, for harvesters to find them. Predicted from public ocean and wind data.</p>
+
+  <div class="explain" id="explain"></div>
+
+  <p class="lbl">Species</p>
+  <div class="seg" id="spSeg" role="group" aria-label="Species"></div>
+  <p class="lbl">Season (held out from training)</p>
+  <div class="seg" id="yrSeg" role="group" aria-label="Season"></div>
+
+  <p class="day" id="dayTxt"></p>
+  <p class="issued" id="issuedTxt"></p>
+
+  <div class="ramp" aria-hidden="true"></div>
+  <div class="ends"><span>Lower likelihood</span><span>Higher likelihood</span></div>
+  <div class="key"><span class="dot"></span>Real sighting on this date (&plusmn;1 day)</div>
+  <div class="key"><span class="dia"></span>Your own reports</div>
+  <label class="toggle"><input type="checkbox" id="openWater"> <span>Open water only (fishing grounds, <span id="kmTxt"></span> km or more from land)</span></label>
+
+  <h2>Check against reality</h2>
+  <p class="t" id="dayCheck"></p>
+  <p class="t" id="seasonCheck"></p>
+  <div class="bars" id="bars" aria-hidden="true"></div>
+  <p class="t muted" id="skillTxt"></p>
+
+  <h2>Highest likelihood on this date</h2>
+  <ol id="hot"></ol>
+
+  <h2>Seen jellyfish?</h2>
+  <button class="btn primary" id="reportBtn" aria-pressed="false">Report a sighting</button>
+  <button class="btn" id="exportBtn">Export my reports (CSV)</button>
+  <p class="note" id="reportNote">Click the map to place a report. Reports stay in this browser and are not used by the model yet.</p>
+
+  <p class="foot" id="foot"></p>
+</aside>
+
+<div id="map" role="application" aria-label="Jellyfish likelihood map"></div>
+
+<section id="timeline" aria-label="Timeline">
+  <div id="tl-row">
+    <button id="play" aria-label="Play">&#9654;</button>
+    <div style="flex:1">
+      <canvas id="spark" aria-hidden="true"></canvas>
+      <input id="slider" type="range" min="0" step="1" aria-label="Day">
+    </div>
+  </div>
+  <div class="tl-legend">Purple area: average predicted likelihood across the shown waters. Blue ticks: number of real sightings that day.</div>
+</section>
+
+<script>
+const D = __DATA__;
+const M = D.meta, SP = Object.keys(D.species), YEARS = Object.keys(D.days);
+const ALPH = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
+let sp = SP[0], yr = YEARS[YEARS.length - 1], di = 0, timer = null, reporting = false, openOnly = false;
+const band = D.coast.map(c => c >= M.at_sea_km ? 1 : 0);
+const visible = k => !openOnly || band[k] === 1;
+const days = () => D.days[yr];
+const cache = {};
+function grid(s, y, i) {
+  const key = s + y + i;
+  if (!cache[key]) { const str = D.species[s].grids[y][i]; const a = new Int8Array(str.length);
+    for (let k = 0; k < str.length; k++) a[k] = str[k] === "." ? -1 : ALPH.indexOf(str[k]); cache[key] = a; }
+  return cache[key];
+}
+const fmt = s => new Date(s + "T12:00:00").toLocaleDateString("en-GB", {day: "numeric", month: "long", year: "numeric"});
+const fmtShort = s => new Date("2000-" + s + "T12:00:00").toLocaleDateString("en-GB", {day: "numeric", month: "long"});
+const shift = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const pct = x => Math.round(x * 100) + "%";
+
+document.getElementById("kmTxt").textContent = M.at_sea_km;
+document.getElementById("explain").innerHTML =
+  `This is a <b>replay of a season the model never saw</b>. It was trained on ${M.train_years[0]} to ${M.train_years[1]} only. ` +
+  `Each day's map was computed from ocean and wind data from <b>${M.lead} days earlier</b>. Blue dots are real sightings, so you can see whether it got it right.<br>` +
+  `<a href="about.html">How this works and where the data comes from</a>`;
+document.getElementById("foot").innerHTML =
+  `Likelihood is a relative index, not a probability. Sightings: ${M.citation}. Ocean: Copernicus Marine Service. Wind: ERA5, Copernicus Climate Change Service. ` +
+  `Base map: OpenStreetMap, CARTO. <a href="about.html">Full sources and method</a>. Related work: <a href="about.html#gojelly">how this compares with the GoJelly Risk Map</a>.`;
+
+// ---------- map ----------
+const map = L.map("map", {zoomSnap: .5}).setView([56.1, 11.1], 7);
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution: "&copy; OpenStreetMap contributors &copy; CARTO", subdomains: "abcd", maxZoom: 13}).addTo(map);
+const R = L.canvas({padding: .5});
+const rects = D.cells.map(([la, lo]) => L.rectangle([[la - D.dlat, lo - D.dlon], [la + D.dlat, lo + D.dlon]],
+  {renderer: R, stroke: false, fillOpacity: 0, interactive: false}).addTo(map));
+const obsLayer = L.layerGroup().addTo(map), repLayer = L.layerGroup().addTo(map);
+const STOPS = [[233, 221, 247], [176, 124, 216], [91, 26, 140]];
+function colour(q) {
+  const t = q / 63, [a, b, u] = t < .5 ? [STOPS[0], STOPS[1], t * 2] : [STOPS[1], STOPS[2], (t - .5) * 2];
+  return `rgb(${a.map((x, i) => Math.round(x + (b[i] - x) * u)).join(",")})`;
+}
+
+// ---------- controls ----------
+function segment(el, items, current, label, onPick) {
+  el.innerHTML = "";
+  items.forEach(v => { const b = document.createElement("button"); b.textContent = label(v);
+    b.setAttribute("aria-pressed", v === current);
+    b.onclick = () => { [...el.children].forEach(x => x.setAttribute("aria-pressed", x === b)); onPick(v); };
+    el.appendChild(b); });
+}
+segment(document.getElementById("spSeg"), SP, sp, s => D.species[s].common, s => { sp = s; reset(); });
+segment(document.getElementById("yrSeg"), YEARS, yr, y => y, y => { yr = y; reset(); });
+document.getElementById("openWater").onchange = e => { openOnly = e.target.checked; buildSeries(); draw(); };
+
+// ---------- timeline ----------
+const slider = document.getElementById("slider"), cv = document.getElementById("spark");
+let series = [], counts = [];
+function buildSeries() {
+  const S = D.species[sp], dd = days();
+  series = dd.map((_, i) => { const g = grid(sp, yr, i); let s = 0, n = 0;
+    for (let k = 0; k < g.length; k++) if (g[k] >= 0 && visible(k)) { s += g[k]; n++; } return n ? s / n : 0; });
+  const idx = Object.fromEntries(dd.map((d, i) => [d, i]));
+  counts = new Array(dd.length).fill(0);
+  S.obs.forEach(o => { if (o[0] in idx) counts[idx[o[0]]]++; });
+  slider.max = dd.length - 1;
+}
+function drawSpark() {
+  const w = cv.clientWidth, h = cv.clientHeight, r = window.devicePixelRatio || 1;
+  cv.width = w * r; cv.height = h * r;
+  const c = cv.getContext("2d"); c.scale(r, r); c.clearRect(0, 0, w, h);
+  const n = series.length, x = i => (i + .5) / n * w, maxS = Math.max(1, ...series), maxC = Math.max(1, ...counts);
+  c.beginPath(); c.moveTo(x(0), h);
+  series.forEach((v, i) => c.lineTo(x(i), h - 6 - v / maxS * (h - 16)));
+  c.lineTo(x(n - 1), h); c.closePath(); c.fillStyle = "rgba(176,124,216,.45)"; c.fill();
+  c.fillStyle = "#1fc4d8";
+  counts.forEach((v, i) => { if (v) { const bh = 3 + v / maxC * 18; c.fillRect(x(i) - 1, h - bh, 2, bh); } });
+  c.fillStyle = "#a9c1c6"; c.font = "12px Barlow";
+  days().forEach((d, i) => { if (d.slice(8) === "01") c.fillText(new Date(d + "T12:00:00").toLocaleDateString("en-GB", {month: "short"}), x(i) + 3, 12); });
+  c.strokeStyle = "#f1f6f7"; c.lineWidth = 1.5; c.beginPath(); c.moveTo(x(di), 0); c.lineTo(x(di), h); c.stroke();
+}
+cv.addEventListener("click", e => { const b = cv.getBoundingClientRect(); di = Math.min(days().length - 1, Math.floor((e.clientX - b.left) / b.width * days().length)); draw(); });
+slider.oninput = e => { di = +e.target.value; draw(); };
+document.getElementById("play").onclick = function () {
+  if (timer) { clearInterval(timer); timer = null; this.innerHTML = "&#9654;"; this.setAttribute("aria-label", "Play"); return; }
+  this.innerHTML = "&#10074;&#10074;"; this.setAttribute("aria-label", "Pause");
+  timer = setInterval(() => { di = (di + 1) % days().length; draw(); }, 300);
+};
+window.addEventListener("resize", drawSpark);
+
+// ---------- reality check (same rule as the Python results: rank within the same distance-from-land band) ----------
+function rankOf(g, k) {
+  let lo = 0, eq = 0, n = 0;
+  for (let j = 0; j < g.length; j++) if (g[j] >= 0 && band[j] === band[k]) { n++; if (g[j] < g[k]) lo++; else if (g[j] === g[k]) eq++; }
+  return (lo + .5 * eq) / n;
+}
+function checks(g, day) {
+  const S = D.species[sp], top = pct(M.top_share);
+  const today = S.obs.filter(o => o[0] === day && o[3] >= 0 && g[o[3]] >= 0);
+  const hits = today.filter(o => rankOf(g, o[3]) >= 1 - M.top_share).length;
+  document.getElementById("dayCheck").innerHTML = today.length
+    ? `<b>This date:</b> ${today.length} real sighting${today.length > 1 ? "s" : ""}. <b>${hits} of ${today.length}</b> fell in the top ${top} of predicted waters.`
+    : `<b>This date:</b> no real sightings were recorded.`;
+  const s = S.seasons[yr];
+  const seasonTxt = `${fmtShort(M.season[0])} to ${fmtShort(M.season[1])} ${yr}`;
+  document.getElementById("seasonCheck").innerHTML = s.n
+    ? `<b>Whole season</b> (${seasonTxt}): <b>${s.hits} of ${s.n}</b> real sightings (${pct(s.rate)}) fell in the top ${top} of predicted waters. By pure chance it would be ${top}.`
+    : `<b>Whole season</b> (${seasonTxt}): no real sightings to check against.`;
+  document.getElementById("bars").innerHTML = s.n ? [["Jelly Alert", s.rate, "var(--jelly-mid)"], ["Chance", M.top_share, "var(--chance)"]]
+    .map(([l, v, c]) => `<div class="bar"><span>${l}</span><div class="track"><div class="fill" style="width:${v * 100}%;background:${c}"></div></div><span class="v">${pct(v)}</span></div>`).join("") : "";
+  const r = S.skill.find(x => x.lead === M.lead), t = r.test, ow = r.test_open_water;
+  document.getElementById("skillTxt").innerHTML =
+    `Across all ${M.test_years.join(" and ")} sightings (${t.n_pres}), the model scores AUC <b>${t.auc.toFixed(2)}</b> ` +
+    `(95% range ${t.ci[0].toFixed(2)} to ${t.ci[1].toFixed(2)}). A calendar-only guess scores ${t.auc_calendar.toFixed(2)}. ` +
+    `0.5 is a coin flip, 1.0 is perfect. ` +
+    (ow.auc !== undefined ? `On open-water sightings only (${ow.n_pres}): <b>${ow.auc.toFixed(2)}</b>.`
+      : `Only ${ow.n_pres} test sightings were in open water: too few to score separately.`);
+}
+
+// ---------- draw ----------
+function draw() {
+  const g = grid(sp, yr, di), day = days()[di];
+  slider.value = di;
+  rects.forEach((r, k) => { const q = g[k];
+    r.setStyle(q < 0 || !visible(k) ? {fillOpacity: 0} : {fillColor: colour(q), fillOpacity: .12 + .6 * q / 63}); });
+  obsLayer.clearLayers();
+  const t = new Date(day + "T12:00:00");
+  D.species[sp].obs.filter(o => Math.abs(new Date(o[0] + "T12:00:00") - t) <= 864e5).forEach(o =>
+    L.circleMarker([o[1], o[2]], {renderer: R, radius: 6, color: "#fff", weight: 2, fillColor: "#1fc4d8", fillOpacity: 1})
+      .bindTooltip(`Real sighting, ${fmt(o[0])}`).addTo(obsLayer));
+  document.getElementById("dayTxt").textContent = fmt(day);
+  document.getElementById("issuedTxt").textContent = `Predicted on ${fmt(shift(day, -M.lead))}, ${M.lead} days ahead`;
+  const top = [...g].map((q, k) => [q, k]).filter(a => a[0] >= 0 && visible(a[1])).sort((a, b) => b[0] - a[0]).slice(0, 5);
+  const ol = document.getElementById("hot"); ol.innerHTML = "";
+  top.forEach(([q, k]) => { const [la, lo] = D.cells[k];
+    const li = document.createElement("li"), b = document.createElement("button");
+    b.innerHTML = `<span>${la.toFixed(2)}&deg;N ${lo.toFixed(2)}&deg;E${band[k] ? ", open water" : ""}</span><span>${Math.round(q / 63 * 100)}</span>`;
+    b.onclick = () => map.flyTo([la, lo], 10, {duration: .6});
+    li.appendChild(b); ol.appendChild(li); });
+  checks(g, day);
+  drawSpark();
+}
+function reset() {
+  buildSeries();
+  di = series.reduce((b, v, i, a) => v > a[b] ? i : b, 0);   // open on the season's peak predicted day
+  draw();
+}
+
+// ---------- user reports (browser only; feeding them to the model is v2) ----------
+const KEY = "jellyalert-reports";
+const loadReps = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) { return []; } };
+const saveReps = r => { try { localStorage.setItem(KEY, JSON.stringify(r)); return true; } catch (e) { return false; } };
+function drawReps() {
+  repLayer.clearLayers();
+  loadReps().forEach(r => L.marker([r.lat, r.lon], {icon: L.divIcon({className: "", html: '<div class="dia"></div>', iconSize: [12, 12]})})
+    .bindTooltip(`${r.species}, ${r.amount}, ${r.impact} (${fmt(r.date)})`).addTo(repLayer));
+}
+const repBtn = document.getElementById("reportBtn");
+repBtn.onclick = () => { reporting = !reporting; repBtn.setAttribute("aria-pressed", reporting);
+  repBtn.textContent = reporting ? "Click the map to place it" : "Report a sighting";
+  map.getContainer().style.cursor = reporting ? "crosshair" : ""; };
+map.on("click", e => {
+  if (!reporting) return;
+  const opts = SP.map(n => `<option>${D.species[n].common} (${n})</option>`).join("") + "<option>Unsure</option>";
+  const html = `<form id="rf"><label>Species<select name="species">${opts}</select></label>
+    <label>How many<select name="amount"><option>A few</option><option>Many</option><option>Mass occurrence</option></select></label>
+    <label>Effect<select name="impact"><option>None</option><option>Fouled or clogged nets</option><option>Catch damaged</option><option>Blocked water intake</option><option>Collected for use</option></select></label>
+    <label>Date<input type="date" name="date" value="${days()[di]}"></label>
+    <button type="submit">Save report</button></form>`;
+  const p = L.popup().setLatLng(e.latlng).setContent(html).openOn(map);
+  setTimeout(() => document.getElementById("rf").onsubmit = ev => {
+    ev.preventDefault(); const f = new FormData(ev.target), reps = loadReps();
+    reps.push({lat: +e.latlng.lat.toFixed(4), lon: +e.latlng.lng.toFixed(4), species: f.get("species"),
+               amount: f.get("amount"), impact: f.get("impact"), date: f.get("date"), saved: new Date().toISOString()});
+    const ok = saveReps(reps); map.closePopup(p); drawReps(); repBtn.click();
+    document.getElementById("reportNote").textContent = ok
+      ? `Report saved. ${reps.length} report${reps.length > 1 ? "s" : ""} in this browser.`
+      : "This browser blocked storage, so the report was not saved.";
+  }, 0);
+});
+document.getElementById("exportBtn").onclick = () => {
+  const reps = loadReps();
+  if (!reps.length) { document.getElementById("reportNote").textContent = "No reports yet. Use Report a sighting first."; return; }
+  const cols = ["date", "lat", "lon", "species", "amount", "impact", "saved"];
+  const csv = [cols.join(",")].concat(reps.map(r => cols.map(c => `"${String(r[c]).replace(/"/g, '""')}"`).join(","))).join("\n");
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([csv], {type: "text/csv"}));
+  a.download = "jelly_alert_reports.csv"; a.click();
+};
+
+drawReps(); reset();
+</script>
+</body>
+</html>

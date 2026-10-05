@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jelly Alert: how it works</title>
+<meta name="description" content="How the Jelly Alert prototype works, what data it uses and how well it predicts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f8f8; --surface:#ffffff; --text:#12262b; --text-2:#4a5d61; --line:#d8e1e3;
+  --petrol:#0f3d47; --series:#7a3cb0; --band:rgba(122,60,176,.16); --base:#8a8a86; --train:#b9c8cb; --test:#7a3cb0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c2a31; --surface:#10343c; --text:#eef4f5; --text-2:#a9c1c6; --line:#24505a;
+    --series:#b98be0; --band:rgba(185,139,224,.22); --base:#a3a39c; --train:#3f6770; --test:#b98be0;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 17px/1.6 "Barlow",system-ui,sans-serif}
+header{background:var(--petrol);color:#f1f6f7;padding:28px 16px 30px}
+header .in, main{max-width:760px;margin:0 auto}
+header a{color:#f1f6f7}
+h1{font:600 40px/1.1 "Barlow Condensed",sans-serif;margin:10px 0 8px}
+header p{margin:0;color:#c3d6da;font-size:18px;max-width:62ch}
+main{padding:10px 16px 60px}
+h2{font:600 28px/1.2 "Barlow Condensed",sans-serif;margin:44px 0 10px}
+h3{font-size:18px;margin:26px 0 6px}
+p{margin:0 0 14px;max-width:68ch}
+.muted{color:var(--text-2)}
+table{width:100%;border-collapse:collapse;font-size:15px;margin:10px 0 18px;background:var(--surface)}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--text-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px 16px 10px;margin:14px 0}
+.years{display:grid;grid-template-columns:repeat(12,1fr);gap:2px;margin:12px 0 6px}
+.years div{height:26px;border-radius:3px;font-size:12px;display:flex;align-items:center;justify-content:center}
+.legend{display:flex;gap:18px;font-size:14px;color:var(--text-2);flex-wrap:wrap}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:680px){.charts{grid-template-columns:1fr}}
+svg{width:100%;height:auto;display:block;overflow:visible}
+.tip{position:fixed;pointer-events:none;background:var(--petrol);color:#fff;font-size:13px;padding:5px 8px;border-radius:4px;display:none;z-index:9}
+ol.steps{padding-left:22px;max-width:68ch}
+ol.steps li{margin-bottom:8px}
+.imp{display:grid;grid-template-columns:minmax(150px,1fr) 2fr 48px;gap:8px;align-items:center;font-size:14px;margin:6px 0}
+.imp .track{height:10px}
+.imp .fill{height:100%;background:var(--series);border-radius:0 4px 4px 0}
+.imp .v{text-align:right;font-variant-numeric:tabular-nums}
+code{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:15px}
+a{color:var(--series)}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a href="index.html">Back to the map</a>
+  <h1>How Jelly Alert works</h1>
+  <p>Can public ocean and wind data tell us where jellyfish will be a few days ahead? For fishers that means where to avoid; for harvesters, where to find them. This prototype tests it for two species in Danish inner waters.</p>
+</div></header>
+<main>
+  <p class="muted" style="margin-top:22px">A study prototype for DTU course 25352 Blue Bioeconomy Innovation, not a product. Built <span id="built"></span>.</p>
+
+  <h2>What was tested</h2>
+  <p>The model learns from past years and is then tested on years it never saw. The map only shows the test years, because showing years the model learned from would be showing it the answers.</p>
+  <div class="years" id="years" aria-hidden="true"></div>
+  <div class="legend"><span><span class="sw" style="background:var(--train)"></span>Training years</span><span><span class="sw" style="background:var(--test)"></span>Test years, shown on the map</span></div>
+  <table id="split"></table>
+  <p id="leadExplain"></p>
+
+  <h2>How good it is</h2>
+  <p>The score is AUC: how often the model ranks a real jellyfish sighting above a sighting of other sea life. 0.5 is a coin flip, 1.0 is perfect. The dashed line is a calendar-only guess ("is it jellyfish season?"). The model is only useful where it beats that line.</p>
+  <div class="charts" id="charts"></div>
+  <div id="skillText"></div>
+
+  <h2>Where the data comes from</h2>
+  <p>All inputs are public. Nothing is simulated or filled in: days or places without data are left out.</p>
+  <table id="sources"></table>
+
+  <h2>How the model works</h2>
+  <ol class="steps" id="steps"></ol>
+  <h3>What the prediction leans on most</h3>
+  <p class="muted">How much the test score drops when one input is scrambled. Longer bar, more important. Computed for <span class="leadN"></span> days ahead.</p>
+  <div id="importance"></div>
+
+  <h2 id="gojelly">How this compares with GoJelly</h2>
+  <p>The EU project GoJelly (2018 to 2021, coordinated by the University of Southern Denmark) built the GoJelly Risk Map. It follows moon jellies through their life cycle, from polyps on the seabed to adult jellyfish, and lets them drift with modelled ocean currents. It explains where blooms could come from. Jelly Alert asks a narrower, practical question: where will jellyfish be in the next few days, and was that right?</p>
+  <table>
+    <tr><th></th><th>GoJelly Risk Map (public release, 2025)</th><th>Jelly Alert</th></tr>
+    <tr><td>Method</td><td>Simulation: life-cycle model plus ocean drift model</td><td>Statistical: learns from past sightings and the conditions before them</td></tr>
+    <tr><td>Needs to know where polyp beds are (the seabed patches where young jellyfish start life)</td><td>Yes. They are mostly unknown, so the user picks hypothetical sites</td><td>No. Learns from where adult jellyfish were actually seen</td></tr>
+    <tr><td>Ocean conditions</td><td>One year (2021), in monthly steps</td><td>The real conditions of each day, 2015 to 2026</td></tr>
+    <tr><td>Output</td><td>Monthly maps for a chosen scenario</td><td>A map for a specific date, 0 to 10 days ahead</td></tr>
+    <tr><td>Checked against real sightings</td><td>Not yet. The authors state there was not enough data for formal validation</td><td>Yes. Tested on 2025 and 2026 sightings it never saw, against a calendar-only baseline</td></tr>
+    <tr><td>Species</td><td>Moon jelly</td><td>Moon jelly and lion's mane</td></tr>
+    <tr><td>Collects new observations</td><td>No</td><td>Yes, users can report sightings on the map</td></tr>
+  </table>
+  <p><b>Where GoJelly is stronger.</b> It explains why blooms happen and can test what-if scenarios, such as a polyp bed at a given site (polyps are the small seabed stage that releases young jellyfish). Jelly Alert only finds patterns: it cannot say where jellyfish come from, and it predicts where they are likely, not how many.</p>
+  <p><b>How they fit together.</b> The GoJelly authors name citizen observations as a way to validate their model. Jelly Alert's sighting reports are that channel, and its held-out test is the kind of check their framework still needs.</p>
+  <p class="muted">No GoJelly code or data is used in this prototype. Sources: Cant, J., Jones, O. R., Ellingsen, I., Laverick, J. H., Majaneva, S., Dierking, J., Aberle, N. and Javidpour, J. (2025). Coupling hydrodynamic drifting simulations and seasonal demographics to unmask the drivers of jellyfish blooms. <i>Journal of Applied Ecology</i>. <a href="https://doi.org/10.1111/1365-2664.70186">doi:10.1111/1365-2664.70186</a>. Code: <a href="https://github.com/CantJ/Bloom-forecasting-tools">CantJ/Bloom-forecasting-tools</a>, archived at <a href="https://doi.org/10.5281/zenodo.17154611">doi:10.5281/zenodo.17154611</a> (CC BY 4.0). App: <a href="https://gojellyeu.shinyapps.io/gojellyapp/">GoJelly Risk Map</a>.</p>
+
+  <h2>Limits and open questions</h2>
+  <ul id="limits"></ul>
+
+  <h2>Reproduce it</h2>
+  <p>Everything is rebuilt from the raw public data with one command in the project repository: <code>uv run --env-file .env python src/run_all.py</code>. The README lists the three free accounts it needs.</p>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const D = {"meta":{"built":"2026-10-05","lead":5,"leads":[0,1,3,5,7,10],"top_share":0.2,"train_years":[2015,2024],"test_years":[2025,2026],"season":["05-01","09-15"],"at_sea_km":5.0,"grid_km":5.5,"features":[{"id":"sst","label":"Sea surface temperature"},{"id":"sss","label":"Surface salinity"},{"id":"cur","label":"Surface current speed"},{"id":"u10","label":"Wind, west-east component"},{"id":"v10","label":"Wind, south-north component"},{"id":"sst_trend7","label":"Temperature change over the previous 7 days"}],"citation":"GBIF.org (05 October 2026) GBIF Occurrence Download https://doi.org/10.15468/dl.wt6xea","env":[{"label":"Reanalysis","product":"BALTICSEA_MULTIYEAR_PHY_003_011","dataset_id":"cmems_mod_bal_phy_my_P1D-m","from":"2015-01-01","to":"2026-07-31"},{"label":"Operational analysis","product":"BALTICSEA_ANALYSISFORECAST_PHY_003_006","dataset_id":"cmems_mod_bal_phy_anfc_P1D-m","from":"2026-08-01","to":"2026-09-15"}]},"species":{"Cyanea capillata":{"common":"Lion's mane","danish":"brandmand","seasons":{"2025":{"n":73,"hits":32,"rate":0.438,"mean_pct":0.64},"2026":{"n":135,"hits":49,"rate":0.363,"mean_pct":0.627}},"skill":[{"lead":0,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.5943642055880294,"ci":[0.555050832846147,0.6337739361826767],"auc_calendar":0.5665304655430075,"n_pres":263,"n_bg":804},"test_open_water":{"auc":0.588325495808628,"ci":[0.5354158574249086,0.6417203465639663],"auc_calendar":0.5643017787773461,"n_pres":146,"n_bg":402}},{"lead":1,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.602461104454236,"ci":[0.5663731294527032,0.6407619499077465],"auc_calendar":0.5668559944899942,"n_pres":263,"n_bg":806},"test_open_water":{"auc":0.5967911893674156,"ci":[0.5455108007009504,0.648498657014684],"auc_calendar":0.5645586185798294,"n_pres":146,"n_bg":403}},{"lead":3,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.5941384101235403,"ci":[0.5547300700352469,0.6334420237308993],"auc_calendar":0.5663301227892307,"n_pres":264,"n_bg":807},"test_open_water":{"auc":0.5902960193978581,"ci":[0.5321785081615688,0.6438167389288986],"auc_calendar":0.5637755102040816,"n_pres":147,"n_bg":404}},{"lead":5,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.5781155369205683,"ci":[0.5389075986883513,0.6181618256304756],"auc_calendar":0.5661309107849989,"n_pres":265,"n_bg":810},"test_open_water":{"auc":0.5733566900233567,"ci":[0.527431425710207,0.6260918785915883],"auc_calendar":0.5630046713380047,"n_pres":148,"n_bg":405}},{"lead":7,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.589510932422757,"ci":[0.5480958090839774,0.6270884100072471],"auc_calendar":0.5645917093499293,"n_pres":268,"n_bg":813},"test_open_water":{"auc":0.5751515151515152,"ci":[0.5227724357058389,0.6313976956825459],"auc_calendar":0.5614987714987716,"n_pres":150,"n_bg":407}},{"lead":10,"trained_on":"open-water sightings only","n_train_pres":340,"test":{"auc":0.5747232472324724,"ci":[0.5398516154106384,0.6116373286123488],"auc_calendar":0.5645917093499293,"n_pres":268,"n_bg":813},"test_open_water":{"auc":0.584946764946765,"ci":[0.5346988919155232,0.6387442074437256],"auc_calendar":0.5614987714987716,"n_pres":150,"n_bg":407}}],"importance":{"sst":0.02732844164919628,"sss":0.02938341486140218,"cur":-0.002270906126252159,"u10":0.0011215932914045213,"v10":1.7470300489075273e-05,"sst_trend7":0.017456557186116828},"audit":{"train":645,"test":315,"go":true}},"Aurelia aurita":{"common":"Moon jelly","danish":"vandmand","seasons":{"2025":{"n":84,"hits":23,"rate":0.274,"mean_pct":0.636},"2026":{"n":88,"hits":36,"rate":0.409,"mean_pct":0.627}},"skill":[{"lead":0,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6485471855382772,"ci":[0.6026312931514944,0.6957791121198935],"auc_calendar":0.6247623140840302,"n_pres":191,"n_bg":804},"test_open_water":{"auc":0.6211493039851249,"ci":[0.5610475694522454,0.6802402495107288],"auc_calendar":0.6266018392884064,"n_pres":99,"n_bg":402}},{"lead":1,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6253005309916558,"ci":[0.5771833123364147,0.6692899409667623],"auc_calendar":0.6241401920826959,"n_pres":193,"n_bg":806},"test_open_water":{"auc":0.5967493796526054,"ci":[0.5340712633261702,0.6569532201669299],"auc_calendar":0.6259181141439206,"n_pres":100,"n_bg":403}},{"lead":3,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6299253295323946,"ci":[0.5822432027869802,0.6772286030655608],"auc_calendar":0.6241436652092122,"n_pres":193,"n_bg":807},"test_open_water":{"auc":0.6064356435643564,"ci":[0.5331446933638586,0.6748373545900349],"auc_calendar":0.6259158415841584,"n_pres":100,"n_bg":404}},{"lead":5,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6435393078743683,"ci":[0.5993515952026771,0.6861801250905657],"auc_calendar":0.6241540331350348,"n_pres":193,"n_bg":810},"test_open_water":{"auc":0.6277777777777779,"ci":[0.5605619015962215,0.6877800524589766],"auc_calendar":0.6259135802469136,"n_pres":100,"n_bg":405}},{"lead":7,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6541402978796628,"ci":[0.6092911704688264,0.6993145138621147],"auc_calendar":0.6241643245447999,"n_pres":193,"n_bg":813},"test_open_water":{"auc":0.6383292383292385,"ci":[0.5769687856004969,0.6917784474817372],"auc_calendar":0.625909090909091,"n_pres":100,"n_bg":407}},{"lead":10,"trained_on":"open-water sightings only","n_train_pres":310,"test":{"auc":0.6726032286229597,"ci":[0.6306757789413647,0.7160214866973588],"auc_calendar":0.6241643245447999,"n_pres":193,"n_bg":813},"test_open_water":{"auc":0.6750859950859951,"ci":[0.620208201881408,0.7323468381340721],"auc_calendar":0.625909090909091,"n_pres":100,"n_bg":407}}],"importance":{"sst":0.02632188319580373,"sss":0.10981641399603403,"cur":0.0026879037932578064,"u10":0.00230218128318298,"v10":-0.005734024179620078,"sst_trend7":0.011643318620866084},"audit":{"train":603,"test":249,"go":true}}}};
+const M = D.meta, SP = Object.keys(D.species);
+const $ = id => document.getElementById(id);
+const fmtD = s => new Date(s + "T12:00:00").toLocaleDateString("en-GB", {day: "numeric", month: "long", year: "numeric"});
+const fmtS = s => new Date("2000-" + s + "T12:00:00").toLocaleDateString("en-GB", {day: "numeric", month: "long"});
+const pct = x => Math.round(x * 100) + "%";
+document.querySelectorAll(".leadN").forEach(e => e.textContent = M.lead);
+$("built").textContent = fmtD(M.built);
+
+// ---- what was tested ----
+let yrs = "";
+for (let y = M.train_years[0]; y <= M.test_years[M.test_years.length - 1]; y++) {
+  const test = M.test_years.includes(y);
+  yrs += `<div style="background:var(${test ? "--test" : "--train"});color:${test ? "#fff" : "inherit"}">${String(y).slice(2)}</div>`;
+}
+$("years").innerHTML = yrs;
+$("years").style.gridTemplateColumns = `repeat(${M.test_years[M.test_years.length - 1] - M.train_years[0] + 1},1fr)`;
+$("split").innerHTML = `<tr><th>Period</th><th>Role</th><th>On the map</th></tr>
+  <tr><td>${M.train_years[0]} to ${M.train_years[1]}</td><td>Training: the model learns from these years</td><td>No</td></tr>
+  <tr><td>${M.test_years.join(" and ")}</td><td>Test: held out, never seen during training</td><td>Yes, ${fmtS(M.season[0])} to ${fmtS(M.season[1])} each year</td></tr>`;
+$("leadExplain").innerHTML = `Each map day is computed <b>only from ocean and wind data from ${M.lead} days earlier</b>, exactly as a real forecast would be. ` +
+  `The scores below use every ${M.test_years.join(" and ")} sighting in every month; the map shows the main season.`;
+
+// ---- skill charts (one small multiple per species; single series + dashed baseline) ----
+const tip = $("tip");
+function chart(sp) {
+  const S = D.species[sp], rows = S.skill, W = 340, H = 220, pl = 38, pr = 12, pt = 26, pb = 36;
+  const xs = rows.map(r => r.lead), maxX = Math.max(...xs), y0 = .4, y1 = 1;
+  const X = v => pl + v / maxX * (W - pl - pr), Y = v => pt + (1 - (Math.max(y0, Math.min(y1, v)) - y0) / (y1 - y0)) * (H - pt - pb);
+  const line = k => rows.map((r, i) => `${i ? "L" : "M"}${X(r.lead)},${Y(k(r))}`).join("");
+  const band = rows.map((r, i) => `${i ? "L" : "M"}${X(r.lead)},${Y(r.test.ci[1])}`).join("") +
+               [...rows].reverse().map(r => `L${X(r.lead)},${Y(r.test.ci[0])}`).join("") + "Z";
+  let g = "";
+  [.5, .6, .7, .8, .9, 1].forEach(v => g += `<line x1="${pl}" x2="${W - pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/>` +
+    `<text x="${pl - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="11" fill="var(--text-2)">${v.toFixed(1)}</text>`);
+  xs.forEach(v => g += `<text x="${X(v)}" y="${H - pb + 16}" text-anchor="middle" font-size="11" fill="var(--text-2)">${v}</text>`);
+  g += `<text x="${(pl + W - pr) / 2}" y="${H - 4}" text-anchor="middle" font-size="12" fill="var(--text-2)">Days ahead</text>`;
+  const last = rows[rows.length - 1];
+  const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${S.common}: AUC by days ahead">
+    <text x="${pl}" y="14" font-size="14" font-weight="600" fill="var(--text)">${S.common} (${sp})</text>${g}
+    <path d="${band}" fill="var(--band)"/>
+    <path d="${line(r => r.test.auc_calendar)}" fill="none" stroke="var(--base)" stroke-width="2" stroke-dasharray="5 4"/>
+    <path d="${line(r => r.test.auc)}" fill="none" stroke="var(--series)" stroke-width="2"/>
+    ${rows.map(r => `<circle cx="${X(r.lead)}" cy="${Y(r.test.auc)}" r="4.5" fill="var(--series)" stroke="var(--surface)" stroke-width="2"/>
+      <circle class="hit" cx="${X(r.lead)}" cy="${Y(r.test.auc)}" r="14" fill="transparent" data-t="${r.lead} days ahead: AUC ${r.test.auc.toFixed(2)} (${r.test.ci[0].toFixed(2)} to ${r.test.ci[1].toFixed(2)}), calendar ${r.test.auc_calendar.toFixed(2)}"/>`).join("")}
+    <text x="${X(last.lead) - 4}" y="${Y(last.test.auc) - 10}" text-anchor="end" font-size="12" fill="var(--text)">Jelly Alert</text>
+    <text x="${X(last.lead) - 4}" y="${Y(last.test.auc_calendar) + 16}" text-anchor="end" font-size="12" fill="var(--text-2)">Calendar only</text>
+  </svg>`;
+  const tbl = `<table><tr><th class="num">Days ahead</th><th class="num">AUC</th><th class="num">95% range</th><th class="num">Calendar</th></tr>` +
+    rows.map(r => `<tr><td class="num">${r.lead}</td><td class="num">${r.test.auc.toFixed(2)}</td><td class="num">${r.test.ci[0].toFixed(2)} to ${r.test.ci[1].toFixed(2)}</td><td class="num">${r.test.auc_calendar.toFixed(2)}</td></tr>`).join("") + `</table>`;
+  return `<div class="card">${svg}<details><summary class="muted" style="font-size:14px;cursor:pointer">Show as table</summary>${tbl}</details></div>`;
+}
+$("charts").innerHTML = SP.map(chart).join("");
+document.querySelectorAll(".hit").forEach(c => {
+  c.addEventListener("mousemove", e => { tip.textContent = c.dataset.t; tip.style.display = "block"; tip.style.left = e.clientX + 12 + "px"; tip.style.top = e.clientY + 12 + "px"; });
+  c.addEventListener("mouseleave", () => tip.style.display = "none");
+});
+$("skillText").innerHTML = SP.map(sp => {
+  const S = D.species[sp], r = S.skill.find(x => x.lead === M.lead), ow = r.test_open_water;
+  const seasons = Object.entries(S.seasons).filter(([, s]) => s.n)
+    .map(([y, s]) => `${y}: ${s.hits} of ${s.n} sightings (${pct(s.rate)})`).join("; ");
+  return `<h3>${S.common}</h3><p>At ${M.lead} days ahead: AUC <b>${r.test.auc.toFixed(2)}</b> against ${r.test.auc_calendar.toFixed(2)} for the calendar, on ${r.test.n_pres} test sightings. ` +
+    (seasons ? `Share of real sightings that landed in the top ${pct(M.top_share)} of predicted waters on their day (chance would be ${pct(M.top_share)}): ${seasons}. ` : "") +
+    (ow.auc !== undefined ? `Open-water sightings only (${ow.n_pres}): AUC ${ow.auc.toFixed(2)}.` : `Only ${ow.n_pres} test sightings were in open water, too few to score separately.`) +
+    ` Trained on ${r.trained_on} (${r.n_train_pres} sighting-days).</p>`;
+}).join("");
+
+// ---- sources ----
+const envRows = M.env.map(e => `${e.label}: ${fmtD(e.from)} to ${fmtD(e.to)} (<a href="https://data.marine.copernicus.eu/product/${e.product}/description">${e.product}</a>)`).join("<br>");
+const counts = SP.map(sp => { const a = D.species[sp].audit; return a ? `${D.species[sp].common}: ${a.train} training and ${a.test} test sighting-days` : ""; }).filter(Boolean).join("<br>");
+$("sources").innerHTML = `<tr><th>What</th><th>Source</th><th>Used for</th></tr>
+  <tr><td>Jellyfish sightings</td><td><a href="https://www.gbif.org">GBIF</a>, which gathers arter.dk, Artportalen, iNaturalist and national monitoring. ${M.citation}</td><td>Where and when jellyfish were seen.<br>${counts}</td></tr>
+  <tr><td>Other sea life sightings</td><td>Same GBIF download: jellyfish relatives, comb jellies, starfish and relatives</td><td>Where people were looking (corrects for observer effort)</td></tr>
+  <tr><td>Sea temperature, salinity, currents</td><td>Copernicus Marine Service, Baltic Sea physics, daily, surface layer.<br>${envRows}</td><td>Ocean conditions before each sighting and each map day</td></tr>
+  <tr><td>Wind</td><td><a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels">ERA5</a>, Copernicus Climate Change Service, 10 m wind</td><td>Wind pushes jellyfish near the surface</td></tr>
+  <tr><td>Base map</td><td>OpenStreetMap contributors, CARTO</td><td>Background map only</td></tr>`;
+
+// ---- method ----
+$("steps").innerHTML = [
+  `Danish inner waters are split into a grid of about ${M.grid_km} km cells.`,
+  `Every sighting is placed in its cell. For each one, the model looks up the ocean and wind conditions in that cell a set number of days before (0 to ${M.leads[M.leads.length - 1]}).`,
+  `The model (MaxEnt, a standard method in ecology for sighting data) compares conditions before jellyfish sightings with conditions before sightings of other sea life by the same kind of observers. That way it learns what is special about jellyfish conditions, not where people tend to go.`,
+  `For the map, every cell gets a score every day, from conditions ${M.lead} days earlier. The colour shows the score relative to other cells.`,
+  `Inputs (provisional): ${M.features.map(f => f.label.toLowerCase()).join(", ")}.`
+].map(s => `<li>${s}</li>`).join("");
+$("importance").innerHTML = SP.map(sp => {
+  const imp = D.species[sp].importance; if (!imp) return "";
+  const items = M.features.map(f => [f.label, Math.max(0, imp[f.id])]).sort((a, b) => b[1] - a[1]), mx = Math.max(1e-9, ...items.map(i => i[1]));
+  return `<h3>${D.species[sp].common}</h3>` + items.map(([l, v]) =>
+    `<div class="imp"><span>${l}</span><div class="track"><div class="fill" style="width:${v / mx * 100}%"></div></div><span class="v">${v.toFixed(3)}</span></div>`).join("");
+}).join("");
+
+// ---- limits ----
+const ow = SP.map(sp => { const r = D.species[sp].skill.find(x => x.lead === M.lead); return `${D.species[sp].common}: ${r.test_open_water.n_pres} of ${r.test.n_pres}`; }).join("; ");
+const envLabels = M.env.map(e => e.label);
+$("limits").innerHTML = [
+  `<b>Sightings come mostly from the coast.</b> Test sightings in open water (${M.at_sea_km} km or more from land): ${ow}. The map applies the model to fishing grounds, but how well it holds out there is not yet tested. Reports from fishers, the button on the map, are how a real service would close this gap.`,
+  `<b>Where, not how many.</b> The model predicts where jellyfish are likely, not how dense a bloom is.`,
+  `<b>Relative, not a probability.</b> Colours rank waters against each other on the same day.`,
+  envLabels.length > 1 ? `<b>Two versions of the ocean data.</b> The ${envLabels.map(l => l.toLowerCase()).join(" and ")} come from the same Copernicus model system run in different ways. Part of any drop in skill in the test years can come from that switch.` : "",
+  `<b>Few inputs.</b> Six physical and wind inputs. Food supply (plankton), oxygen and where young jellyfish (polyps) live are not included yet.`,
+  `<b>Reports stay in the browser.</b> Sightings entered on the map are saved only on that device and are not used by the model.`
+].filter(Boolean).map(s => `<li style="margin-bottom:10px;max-width:68ch">${s}</li>`).join("");
+</script>
+</body>
+</html>
