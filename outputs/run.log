@@ -1,20 +1,8 @@
 
-=== Step 1/7: Download sightings from GBIF
-  Cyanea capillata: usageKey=2264478 (EXACT)
-  Aurelia aurita: usageKey=2264442 (EXACT)
-  Cnidaria: usageKey=43 (EXACT)
-  Ctenophora: usageKey=51 (EXACT)
-  Echinodermata: usageKey=50 (EXACT)
-download key: 0011025-260928105237408
-  status: PREPARING
-  status: RUNNING
-  status: RUNNING
-  status: RUNNING
-  status: SUCCEEDED
-saved; cite: 10.15468/dl.wt6xea
---- done in 123 s
+=== Step 1/8: Download sightings from GBIF
+already done
 
-=== Step 2/7: Check there are enough sightings (go/no-go)
+=== Step 2/8: Check there are enough sightings (go/no-go)
 # Data audit
 
 Records after quality filter (all taxa): 31038
@@ -87,130 +75,14 @@ date
 
 --- done in 0 s
 
-=== Step 3/7: Download ocean data (Copernicus Marine)
-INFO - 2026-10-05T12:33:53Z - Selected dataset version: "202303"
-INFO - 2026-10-05T12:33:53Z - Selected dataset part: "default"
-WARNING - 2026-10-05T12:33:53Z - Some of your subset selection [9.0, 13.1] for the longitude dimension exceed the dataset coordinates [9.041542053222656, 30.207401275634766]
-WARNING - 2026-10-05T12:33:53Z - Some of your subset selection [0.0, 1.5] for the depth dimension exceed the dataset coordinates [0.5016462206840515, 712.024658203125]
-cmems_mod_bal_phy_my_P1D-m: 1993-01-01 to 2026-07-31
-  downloading 2015: 365 days
-  downloading 2016: 366 days
-  downloading 2017: 365 days
-  downloading 2018: 365 days
-  downloading 2019: 365 days
-  downloading 2020: 366 days
-  downloading 2021: 365 days
-  downloading 2022: 365 days
-  downloading 2023: 365 days
-  downloading 2024: 366 days
-  downloading 2025: 365 days
-  downloading 2026: 212 days
-skip cmems_mod_bal_phy_myint_P1D-m: cmems_mod_bal_phy_myint_P1D-m Please check that the dataset exists and the input datasetID is correct.
-INFO - 2026-10-05T12:39:41Z - Selected dataset version: "202411"
-INFO - 2026-10-05T12:39:41Z - Selected dataset part: "default"
-WARNING - 2026-10-05T12:39:41Z - You are using the dataset cmems_mod_bal_phy_anfc_P1D-m, version '202411', part 'default'. This exact version and part of the dataset will be retired on the 2027-01-12T13:00:00.000Z. For more information you can check: https://marine.copernicus.eu/user-corner/product-roadmap/transition-information
-WARNING - 2026-10-05T12:39:41Z - Some of your subset selection [9.0, 13.1] for the longitude dimension exceed the dataset coordinates [9.041582107543945, 30.208656311035156]
-WARNING - 2026-10-05T12:39:41Z - Some of your subset selection [0.0, 1.5] for the depth dimension exceed the dataset coordinates [0.5016462206840515, 712.024658203125]
-cmems_mod_bal_phy_anfc_P1D-m: 2022-12-02 to 2026-10-13
-  downloading 2026: 46 days
+=== Step 3/8: Download ocean data (Copernicus Marine)
 Ocean data complete.
---- done in 388 s
+--- done in 0 s
 
-=== Step 4/7: Download wind data (ERA5)
-2026-10-05 12:40:21,780 INFO Request ID is 15a54c15-ab64-4e5f-a6a2-b46f93ba8368
-2026-10-05 12:40:21,853 INFO status has been updated to accepted
-2026-10-05 12:40:54,634 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 12:40:54,634 INFO status has been updated to running
-2026-10-05 12:44:40,850 INFO status has been updated to successful
-da511f1ec2f84edc5160b20c86e321a5.nc:   0%|          | 0.00/2.09M [00:00<?, ?B/s]da511f1ec2f84edc5160b20c86e321a5.nc:  48%|████▊     | 1.00M/2.09M [00:13<00:14, 76.4kB/s]da511f1ec2f84edc5160b20c86e321a5.nc:  48%|████▊     | 1.00M/2.09M [00:29<00:14, 76.4kB/s]da511f1ec2f84edc5160b20c86e321a5.nc:  96%|█████████▌| 2.00M/2.09M [00:31<00:01, 65.7kB/s]da511f1ec2f84edc5160b20c86e321a5.nc: 100%|██████████| 2.09M/2.09M [00:32<00:00, 66.2kB/s]                                                                                         saved era5_wind_2015.nc
-2026-10-05 12:45:14,430 INFO Request ID is 83b12a3d-ea16-4c3c-bbd8-71d060692694
-2026-10-05 12:45:14,498 INFO status has been updated to accepted
-2026-10-05 12:45:37,993 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 12:45:37,993 INFO status has been updated to running
-2026-10-05 12:49:37,805 INFO status has been updated to successful
-58ebadc0000e2b6d4863686437e9482d.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]58ebadc0000e2b6d4863686437e9482d.nc:  48%|████▊     | 1.00M/2.10M [00:16<00:18, 62.9kB/s]58ebadc0000e2b6d4863686437e9482d.nc:  48%|████▊     | 1.00M/2.10M [00:32<00:18, 62.9kB/s]58ebadc0000e2b6d4863686437e9482d.nc:  95%|█████████▌| 2.00M/2.10M [00:37<00:01, 55.2kB/s]58ebadc0000e2b6d4863686437e9482d.nc: 100%|██████████| 2.10M/2.10M [00:40<00:00, 51.7kB/s]                                                                                         saved era5_wind_2016.nc
-2026-10-05 12:50:20,806 INFO Request ID is 9863c7a5-5cbe-4877-856c-d36aeebe0ee1
-2026-10-05 12:50:20,877 INFO status has been updated to accepted
-2026-10-05 12:50:44,974 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 12:50:44,974 INFO status has been updated to running
-2026-10-05 12:54:44,076 INFO status has been updated to successful
-d00888a61e331d77957663923b6935bf.nc:   0%|          | 0.00/2.09M [00:00<?, ?B/s]d00888a61e331d77957663923b6935bf.nc:  48%|████▊     | 1.00M/2.09M [00:15<00:17, 67.4kB/s]d00888a61e331d77957663923b6935bf.nc:  48%|████▊     | 1.00M/2.09M [00:27<00:17, 67.4kB/s]d00888a61e331d77957663923b6935bf.nc:  95%|█████████▌| 2.00M/2.09M [00:31<00:01, 67.0kB/s]d00888a61e331d77957663923b6935bf.nc: 100%|██████████| 2.09M/2.09M [00:32<00:00, 67.8kB/s]                                                                                         saved era5_wind_2017.nc
-2026-10-05 12:55:17,621 INFO Request ID is 2cb805b8-f93b-45a5-9c2d-2a3e5aa3db1d
-2026-10-05 12:55:19,689 INFO status has been updated to accepted
-2026-10-05 12:55:33,236 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 12:55:33,236 INFO status has been updated to running
-2026-10-05 12:59:39,747 INFO status has been updated to successful
-3fc2cca3d31377b7fac7ce7514f28f4e.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]3fc2cca3d31377b7fac7ce7514f28f4e.nc:  48%|████▊     | 1.00M/2.10M [00:00<00:00, 2.30MB/s]                                                                                         saved era5_wind_2018.nc
-2026-10-05 12:59:41,261 INFO Request ID is 496274e5-a7dd-4fe4-8d1d-40068d1e9970
-2026-10-05 12:59:41,321 INFO status has been updated to accepted
-2026-10-05 13:00:03,649 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:00:03,649 INFO status has been updated to running
-2026-10-05 13:04:05,739 INFO status has been updated to successful
-ba0ee9aeb2bd0d4ac5c33491caf167ef.nc:   0%|          | 0.00/2.09M [00:00<?, ?B/s]ba0ee9aeb2bd0d4ac5c33491caf167ef.nc:  48%|████▊     | 1.00M/2.09M [00:13<00:15, 75.3kB/s]ba0ee9aeb2bd0d4ac5c33491caf167ef.nc:  48%|████▊     | 1.00M/2.09M [00:25<00:15, 75.3kB/s]ba0ee9aeb2bd0d4ac5c33491caf167ef.nc:  96%|█████████▌| 2.00M/2.09M [00:26<00:01, 80.6kB/s]ba0ee9aeb2bd0d4ac5c33491caf167ef.nc: 100%|██████████| 2.09M/2.09M [00:27<00:00, 80.4kB/s]                                                                                         saved era5_wind_2019.nc
-2026-10-05 13:04:35,305 INFO Request ID is 98ebb979-8e58-4986-8bde-7915333a8a65
-2026-10-05 13:04:35,536 INFO status has been updated to accepted
-2026-10-05 13:04:56,939 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:04:56,940 INFO status has been updated to running
-2026-10-05 13:09:01,366 INFO status has been updated to successful
-3e38d987bb6e8c4dbe0549a540e3850d.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]3e38d987bb6e8c4dbe0549a540e3850d.nc:  48%|████▊     | 1.00M/2.10M [00:00<00:00, 2.37MB/s]                                                                                         saved era5_wind_2020.nc
-2026-10-05 13:09:05,462 INFO Request ID is 68a87c25-43e1-41cf-804e-ba5d23fc66e9
-2026-10-05 13:09:05,520 INFO status has been updated to accepted
-2026-10-05 13:09:19,429 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:09:19,429 INFO status has been updated to running
-2026-10-05 13:13:26,890 INFO status has been updated to successful
-3e0977cc4fb7467082b9f961ef7b57fc.nc:   0%|          | 0.00/2.11M [00:00<?, ?B/s]3e0977cc4fb7467082b9f961ef7b57fc.nc:  47%|████▋     | 1.00M/2.11M [00:00<00:00, 2.26MB/s]                                                                                         saved era5_wind_2021.nc
-2026-10-05 13:13:28,424 INFO Request ID is 5180da97-72d5-4cec-aeea-410c97c560c6
-2026-10-05 13:13:28,629 INFO status has been updated to accepted
-2026-10-05 13:13:43,580 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:13:43,580 INFO status has been updated to running
-2026-10-05 13:17:51,785 INFO status has been updated to successful
-4a3202408b468bde5bcec85d5b9eb6c2.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]4a3202408b468bde5bcec85d5b9eb6c2.nc:  48%|████▊     | 1.00M/2.10M [00:00<00:00, 2.20MB/s]                                                                                         saved era5_wind_2022.nc
-2026-10-05 13:17:53,264 INFO Request ID is af7b5084-2800-4eee-9e02-2648e47805a4
-2026-10-05 13:17:54,574 INFO status has been updated to accepted
-2026-10-05 13:18:08,133 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:18:08,133 INFO status has been updated to running
-2026-10-05 13:20:48,881 INFO status has been updated to successful
-bbbb4dd673cf2e2dcfb4feb40775ea0d.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]bbbb4dd673cf2e2dcfb4feb40775ea0d.nc:  48%|████▊     | 1.00M/2.10M [00:00<00:00, 2.30MB/s]bbbb4dd673cf2e2dcfb4feb40775ea0d.nc:  95%|█████████▌| 2.00M/2.10M [00:00<00:00, 3.42MB/s]                                                                                         saved era5_wind_2023.nc
-2026-10-05 13:20:50,325 INFO Request ID is 057ddd36-c42c-41b1-a852-ad34e17347d1
-2026-10-05 13:20:50,418 INFO status has been updated to accepted
-2026-10-05 13:21:11,965 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:21:11,965 INFO status has been updated to running
-2026-10-05 13:22:45,208 INFO status has been updated to successful
-c4cd81adc773129a3cb27c4147d2095c.nc:   0%|          | 0.00/2.10M [00:00<?, ?B/s]c4cd81adc773129a3cb27c4147d2095c.nc:  48%|████▊     | 1.00M/2.10M [00:15<00:17, 67.6kB/s]c4cd81adc773129a3cb27c4147d2095c.nc:  48%|████▊     | 1.00M/2.10M [00:25<00:17, 67.6kB/s]c4cd81adc773129a3cb27c4147d2095c.nc:  95%|█████████▌| 2.00M/2.10M [00:31<00:01, 65.8kB/s]c4cd81adc773129a3cb27c4147d2095c.nc: 100%|██████████| 2.10M/2.10M [00:32<00:00, 67.2kB/s]                                                                                         saved era5_wind_2024.nc
-2026-10-05 13:23:20,364 INFO Request ID is 3c5707d2-b7e9-4fac-abdc-92ea89c16d1f
-2026-10-05 13:23:20,436 INFO status has been updated to accepted
-2026-10-05 13:23:42,240 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:23:42,240 INFO status has been updated to running
-2026-10-05 13:26:13,152 INFO status has been updated to successful
-b2ce725ca5c18d6e964995912f67ffab.nc:   0%|          | 0.00/2.09M [00:00<?, ?B/s]b2ce725ca5c18d6e964995912f67ffab.nc:  48%|████▊     | 1.00M/2.09M [00:00<00:00, 2.13MB/s]                                                                                         saved era5_wind_2025.nc
-2026-10-05 13:26:16,417 INFO Request ID is f6931bd1-48d7-4003-9d8c-71d515fe0560
-2026-10-05 13:26:16,487 INFO status has been updated to accepted
-2026-10-05 13:27:33,569 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:27:33,570 INFO status has been updated to running
-2026-10-05 13:29:10,087 INFO status has been updated to successful
-1008ea7e1b9b4270ff3f393b20722f8d.nc:   0%|          | 0.00/1.43M [00:00<?, ?B/s]1008ea7e1b9b4270ff3f393b20722f8d.nc:  70%|██████▉   | 1.00M/1.43M [00:00<00:00, 2.25MB/s]                                                                                         saved era5_wind_2026_a.nc
-2026-10-05 13:29:11,496 INFO Request ID is df897504-b9cb-4d79-ba68-1c8431e53b9d
-2026-10-05 13:29:11,798 INFO status has been updated to accepted
-2026-10-05 13:29:25,462 WARNING Download format not supported for this dataset. Defaulting to as_source.
-2026-10-05 13:29:25,462 INFO status has been updated to running
-2026-10-05 13:29:44,745 INFO status has been updated to successful
-804814737f6f36079fab297deb93943b.nc:   0%|          | 0.00/119k [00:00<?, ?B/s]804814737f6f36079fab297deb93943b.nc: 100%|██████████| 119k/119k [00:00<00:00, 139kB/s]                                                                                      saved era5_wind_2026_b.nc
---- done in 2966 s
+=== Step 4/8: Download wind data (ERA5)
+--- done in 0 s
 
-=== Step 5/7: Build grid and training tables
-regridded cmems_phy_2015_0.nc
-regridded cmems_phy_2016_0.nc
-regridded cmems_phy_2017_0.nc
-regridded cmems_phy_2018_0.nc
-regridded cmems_phy_2019_0.nc
-regridded cmems_phy_2020_0.nc
-regridded cmems_phy_2021_0.nc
-regridded cmems_phy_2022_0.nc
-regridded cmems_phy_2023_0.nc
-regridded cmems_phy_2024_0.nc
-regridded cmems_phy_2025_0.nc
-regridded cmems_phy_2026_0.nc
-regridded cmems_phy_2026_2.nc
+=== Step 5/8: Build grid and training tables
 Cyanea capillata L=0: presence=857 (open water 486), background=4349
 Cyanea capillata L=1: presence=857 (open water 486), background=4351
 Cyanea capillata L=3: presence=858 (open water 487), background=4352
@@ -223,24 +95,49 @@ Aurelia aurita L=3: presence=718 (open water 410), background=4352
 Aurelia aurita L=5: presence=718 (open water 410), background=4355
 Aurelia aurita L=7: presence=718 (open water 410), background=4358
 Aurelia aurita L=10: presence=718 (open water 410), background=4358
+--- done in 1 s
+
+=== Step 6/8: Choose features (training years only)
+Cyanea capillata | ocean+wind: CV AUC 0.644 (calendar 0.679, 10 years)
+Cyanea capillata | ocean+wind+season: CV AUC 0.705 (calendar 0.679, 10 years)
+Cyanea capillata | ocean+wind(3d)+season: CV AUC 0.709 (calendar 0.679, 10 years)
+Cyanea capillata | ocean+wind+season+distance to land: CV AUC 0.734 (calendar 0.679, 10 years)
+Aurelia aurita | ocean+wind: CV AUC 0.709 (calendar 0.680, 9 years)
+Aurelia aurita | ocean+wind+season: CV AUC 0.737 (calendar 0.680, 9 years)
+Aurelia aurita | ocean+wind(3d)+season: CV AUC 0.736 (calendar 0.680, 9 years)
+Aurelia aurita | ocean+wind+season+distance to land: CV AUC 0.754 (calendar 0.680, 9 years)
+# Feature selection (training years only)
+
+Leave-one-year-out cross-validation within 2015-2024, 5 days ahead. Each row is the average AUC over held-out training years. The 2025-2026 test seasons were not used.
+
+| Feature set | Cyanea capillata | Aurelia aurita | Average |
+|---|---|---|---|
+| ocean+wind | 0.644 | 0.709 | 0.676 |
+| ocean+wind+season | 0.705 | 0.737 | 0.721 |
+| ocean+wind(3d)+season | 0.709 | 0.736 | 0.723 |
+| ocean+wind+season+distance to land | 0.734 | 0.754 | 0.744 |
+| Calendar only | 0.679 | 0.680 | 0.680 |
+
+Chosen: **ocean+wind+season+distance to land**. Tested once on 2025-2026 in step 6.
+
+--- done in 15 s
+
+=== Step 7/8: Train and test the model
+Cyanea capillata lead 0d: AUC 0.610 [0.574, 0.645] vs calendar 0.567 (test sightings 263, open water 146)
+Cyanea capillata lead 1d: AUC 0.620 [0.582, 0.653] vs calendar 0.567 (test sightings 263, open water 146)
+Cyanea capillata lead 3d: AUC 0.600 [0.559, 0.636] vs calendar 0.566 (test sightings 264, open water 147)
+Cyanea capillata lead 5d: AUC 0.586 [0.548, 0.624] vs calendar 0.566 (test sightings 265, open water 148)
+Cyanea capillata lead 7d: AUC 0.596 [0.556, 0.634] vs calendar 0.565 (test sightings 268, open water 150)
+Cyanea capillata lead 10d: AUC 0.579 [0.540, 0.615] vs calendar 0.565 (test sightings 268, open water 150)
+Aurelia aurita lead 0d: AUC 0.725 [0.687, 0.762] vs calendar 0.625 (test sightings 191, open water 99)
+Aurelia aurita lead 1d: AUC 0.715 [0.678, 0.754] vs calendar 0.624 (test sightings 193, open water 100)
+Aurelia aurita lead 3d: AUC 0.719 [0.680, 0.753] vs calendar 0.624 (test sightings 193, open water 100)
+Aurelia aurita lead 5d: AUC 0.716 [0.677, 0.751] vs calendar 0.624 (test sightings 193, open water 100)
+Aurelia aurita lead 7d: AUC 0.713 [0.674, 0.749] vs calendar 0.624 (test sightings 193, open water 100)
+Aurelia aurita lead 10d: AUC 0.719 [0.681, 0.755] vs calendar 0.624 (test sightings 193, open water 100)
 --- done in 10 s
 
-=== Step 6/7: Train and test the model
-Cyanea capillata lead 0d: AUC 0.594 [0.555, 0.634] vs calendar 0.567 (test sightings 263, open water 146)
-Cyanea capillata lead 1d: AUC 0.602 [0.566, 0.641] vs calendar 0.567 (test sightings 263, open water 146)
-Cyanea capillata lead 3d: AUC 0.594 [0.555, 0.633] vs calendar 0.566 (test sightings 264, open water 147)
-Cyanea capillata lead 5d: AUC 0.578 [0.539, 0.618] vs calendar 0.566 (test sightings 265, open water 148)
-Cyanea capillata lead 7d: AUC 0.590 [0.548, 0.627] vs calendar 0.565 (test sightings 268, open water 150)
-Cyanea capillata lead 10d: AUC 0.575 [0.540, 0.612] vs calendar 0.565 (test sightings 268, open water 150)
-Aurelia aurita lead 0d: AUC 0.649 [0.603, 0.696] vs calendar 0.625 (test sightings 191, open water 99)
-Aurelia aurita lead 1d: AUC 0.625 [0.577, 0.669] vs calendar 0.624 (test sightings 193, open water 100)
-Aurelia aurita lead 3d: AUC 0.630 [0.582, 0.677] vs calendar 0.624 (test sightings 193, open water 100)
-Aurelia aurita lead 5d: AUC 0.644 [0.599, 0.686] vs calendar 0.624 (test sightings 193, open water 100)
-Aurelia aurita lead 7d: AUC 0.654 [0.609, 0.699] vs calendar 0.624 (test sightings 193, open water 100)
-Aurelia aurita lead 10d: AUC 0.673 [0.631, 0.716] vs calendar 0.624 (test sightings 193, open water 100)
---- done in 37 s
-
-=== Step 7/7: Build the website into docs/
+=== Step 8/8: Build the website into docs/
 # Results (generated by s07_build_site.py)
 
 ## Cyanea capillata (Lion's mane)
@@ -248,34 +145,34 @@ Aurelia aurita lead 10d: AUC 0.673 [0.631, 0.716] vs calendar 0.624 (test sighti
 
 | Days ahead | AUC (95% CI) | Calendar only | Test sightings |
 |---|---|---|---|
-| 0 | 0.59 (0.56-0.63) | 0.57 | 263 |
-| 1 | 0.60 (0.57-0.64) | 0.57 | 263 |
-| 3 | 0.59 (0.55-0.63) | 0.57 | 264 |
-| 5 | 0.58 (0.54-0.62) | 0.57 | 265 |
-| 7 | 0.59 (0.55-0.63) | 0.56 | 268 |
-| 10 | 0.57 (0.54-0.61) | 0.56 | 268 |
+| 0 | 0.61 (0.57-0.64) | 0.57 | 263 |
+| 1 | 0.62 (0.58-0.65) | 0.57 | 263 |
+| 3 | 0.60 (0.56-0.64) | 0.57 | 264 |
+| 5 | 0.59 (0.55-0.62) | 0.57 | 265 |
+| 7 | 0.60 (0.56-0.63) | 0.56 | 268 |
+| 10 | 0.58 (0.54-0.61) | 0.56 | 268 |
 
-Open-water test sightings (>= 5 km from land): 148. AUC 0.57.
-- 2025 season, 5 days ahead: 32 of 73 sightings (44%) in the top 20% of predicted waters (chance: 20%).
-- 2026 season, 5 days ahead: 49 of 135 sightings (36%) in the top 20% of predicted waters (chance: 20%).
+Open-water test sightings (>= 5 km from land): 148. AUC 0.58.
+- 2025 season, 5 days ahead: 47 of 73 sightings (64%) in the top 20% of predicted waters (chance: 20%).
+- 2026 season, 5 days ahead: 77 of 135 sightings (57%) in the top 20% of predicted waters (chance: 20%).
 
 ## Aurelia aurita (Moon jelly)
 - Trained on: open-water sightings only (310 sighting-days, 2015-2024)
 
 | Days ahead | AUC (95% CI) | Calendar only | Test sightings |
 |---|---|---|---|
-| 0 | 0.65 (0.60-0.70) | 0.62 | 191 |
-| 1 | 0.63 (0.58-0.67) | 0.62 | 193 |
-| 3 | 0.63 (0.58-0.68) | 0.62 | 193 |
-| 5 | 0.64 (0.60-0.69) | 0.62 | 193 |
-| 7 | 0.65 (0.61-0.70) | 0.62 | 193 |
-| 10 | 0.67 (0.63-0.72) | 0.62 | 193 |
+| 0 | 0.73 (0.69-0.76) | 0.62 | 191 |
+| 1 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 3 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 5 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 7 | 0.71 (0.67-0.75) | 0.62 | 193 |
+| 10 | 0.72 (0.68-0.75) | 0.62 | 193 |
 
-Open-water test sightings (>= 5 km from land): 100. AUC 0.63.
-- 2025 season, 5 days ahead: 23 of 84 sightings (27%) in the top 20% of predicted waters (chance: 20%).
-- 2026 season, 5 days ahead: 36 of 88 sightings (41%) in the top 20% of predicted waters (chance: 20%).
+Open-water test sightings (>= 5 km from land): 100. AUC 0.70.
+- 2025 season, 5 days ahead: 48 of 84 sightings (57%) in the top 20% of predicted waters (chance: 20%).
+- 2026 season, 5 days ahead: 46 of 88 sightings (52%) in the top 20% of predicted waters (chance: 20%).
 
 wrote /Users/diegoaml/Desktop/25352_bbi/jelly-alert/docs/index.html and /Users/diegoaml/Desktop/25352_bbi/jelly-alert/docs/about.html
---- done in 1 s
+--- done in 2 s
 
 Finished. Open docs/index.html. Numbers for the report: outputs/results.md

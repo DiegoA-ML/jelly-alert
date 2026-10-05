@@ -5,7 +5,7 @@ For lead L, the features come from day t-L: "what did the ocean look like L days
 import glob, re
 import numpy as np, pandas as pd, xarray as xr
 from scipy.spatial import cKDTree
-from config import (RAW, INTERIM, LEAD_DAYS, SNAP_MAX_KM, FEATURES, AT_SEA_MIN_KM,
+from config import (RAW, INTERIM, LEAD_DAYS, SNAP_MAX_KM, FEATURES, AT_SEA_MIN_KM, GRID_VARS, CANDIDATES,
                     BBOX, GRID_DLAT, GRID_DLON)
 from s02_audit import load, go_species
 
@@ -58,14 +58,17 @@ def build_env():
                       "u10": wind.u10, "v10": wind.v10})
     env["sst_trend7"] = env.sst - env.sst.shift(time=7)
     sea = (env.sst.notnull().mean("time") > 0.99)                # a cell is sea if valid on >99% of days
-    env = env[FEATURES].where(sea)
+    env = env[GRID_VARS].where(sea)
     env["sea"] = sea
     env.to_netcdf(INTERIM / "env.nc")
     return env
 
 def open_env():
     p = INTERIM / "env.nc"
-    return xr.open_dataset(p).load() if p.exists() else build_env()
+    env = xr.open_dataset(p).load() if p.exists() else build_env()
+    for c in ("u10", "v10"):     # wind averaged over the 3 days up to and including the forecast day
+        env[f"{c}_3d"] = env[c].rolling(time=3, min_periods=3).mean()
+    return env
 
 def cell_xy(env, mask):
     LAT, LON = np.meshgrid(env.lat.values, env.lon.values, indexing="ij")
@@ -90,16 +93,36 @@ def snap(df, env):
     df = df.assign(iy=iy[i], ix=ix[i], dist_km=d, coast_km=dl, at_sea=dl >= AT_SEA_MIN_KM)
     return df[df.dist_km <= SNAP_MAX_KM]
 
-def features(cells, env, lead):
+def coast_grid(env):
+    """Distance to land (km) as a lat x lon array (NaN on land)."""
+    iy, ix, c = coast_km(env)
+    g = np.full(env.sea.shape, np.nan, dtype="float32"); g[iy, ix] = c
+    return g
+
+def feature_values(env, coast2d, ti, iy, ix, target_dates, names=FEATURES):
+    """One column per feature. Ocean and wind come from time index ti (the issue day, L days before the
+    target day). Day of year comes from the target day itself, which is known when the forecast is issued."""
+    doy = 2 * np.pi * (pd.DatetimeIndex(target_dates).dayofyear.values - 1) / 365.25
+    out = {}
+    for f in names:
+        if f == "doy_sin": out[f] = np.sin(doy) * np.ones(len(iy))
+        elif f == "doy_cos": out[f] = np.cos(doy) * np.ones(len(iy))
+        elif f == "coast_km": out[f] = coast2d[iy, ix]
+        else: out[f] = env[f].values[ti, iy, ix]
+    return pd.DataFrame(out)
+
+def features(cells, env, lead, names=FEATURES, coast2d=None):
+    coast2d = coast_grid(env) if coast2d is None else coast2d
     t = cells.date - pd.Timedelta(days=lead)
     ok = (t >= pd.Timestamp(env.time.values[0])) & (t <= pd.Timestamp(env.time.values[-1]))
     cells, t = cells[ok], t[ok]
     ti = pd.Index(env.time.values).get_indexer(t)
-    X = {f: env[f].values[ti, cells.iy.values, cells.ix.values] for f in FEATURES}
-    return pd.concat([cells.reset_index(drop=True), pd.DataFrame(X)], axis=1).dropna(subset=FEATURES)
+    X = feature_values(env, coast2d, ti, cells.iy.values, cells.ix.values, cells.date.values, names)
+    return pd.concat([cells.reset_index(drop=True), X], axis=1).dropna(subset=list(names))
 
 def main():
     env = open_env()
+    coast2d = coast_grid(env)
     occ = snap(load(), env)
     bg = occ.drop_duplicates(["iy", "ix", "date"])[["iy", "ix", "date", "at_sea"]]
     for sp in go_species():
@@ -107,8 +130,8 @@ def main():
         pr = occ[occ.species == sp].drop_duplicates(["iy", "ix", "date"])
         pr[["iy", "ix", "date", "at_sea", "decimalLatitude", "decimalLongitude"]].to_csv(INTERIM / f"obs_{tag}.csv", index=False)
         for L in LEAD_DAYS:
-            tab = pd.concat([features(pr[["iy", "ix", "date", "at_sea"]], env, L).assign(y=1),
-                             features(bg, env, L).assign(y=0)])
+            tab = pd.concat([features(pr[["iy", "ix", "date", "at_sea"]], env, L, CANDIDATES, coast2d).assign(y=1),
+                             features(bg, env, L, CANDIDATES, coast2d).assign(y=0)])
             tab.to_csv(INTERIM / f"train_{tag}_L{L}.csv", index=False)
             print(f"{sp} L={L}: presence={int(tab.y.sum())} (open water {int(tab[tab.at_sea].y.sum())}), "
                   f"background={int((tab.y == 0).sum())}")

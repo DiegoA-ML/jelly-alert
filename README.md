@@ -49,8 +49,9 @@ Finished steps are skipped on a rerun, so an interrupted run can simply be start
 | 3 | `s03_copernicus_env.py` | Daily ocean data. Uses the reanalysis where it exists, the operational product after that. Logs which product covers which days |
 | 4 | `s04_era5_wind.py` | Daily wind |
 | 5 | `s05_build_dataset.py` | Everything on one ~5.5 km grid; training tables for 0, 1, 3, 5, 7, 10 days ahead |
-| 6 | `s06_train_eval.py` | MaxEnt model per species and lead time; scores on 2025 to 2026 vs. a calendar-only baseline (`outputs/skill.json`, charts) |
-| 7 | `s07_build_site.py` | Website in `docs/` and the report numbers in `outputs/results.md` |
+| 6a | `s06a_select_features.py` | Picks the input set by leave-one-year-out cross-validation on 2015 to 2024 only (`outputs/feature_selection.md`) |
+| 6 | `s06_train_eval.py` | MaxEnt model per species and lead time; scored once on 2025 to 2026 vs. a calendar-only baseline (`outputs/skill.json`, charts) |
+| 7 | `s07_build_site.py` | Website in `docs/` and the report numbers in `outputs/results.md`. Land outline from Natural Earth (`basemap.py`), so the map needs no tile server or API key |
 
 All settings live in `src/config.py`.
 

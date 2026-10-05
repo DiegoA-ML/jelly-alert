@@ -5,29 +5,29 @@
 
 | Days ahead | AUC (95% CI) | Calendar only | Test sightings |
 |---|---|---|---|
-| 0 | 0.59 (0.56-0.63) | 0.57 | 263 |
-| 1 | 0.60 (0.57-0.64) | 0.57 | 263 |
-| 3 | 0.59 (0.55-0.63) | 0.57 | 264 |
-| 5 | 0.58 (0.54-0.62) | 0.57 | 265 |
-| 7 | 0.59 (0.55-0.63) | 0.56 | 268 |
-| 10 | 0.57 (0.54-0.61) | 0.56 | 268 |
+| 0 | 0.61 (0.57-0.64) | 0.57 | 263 |
+| 1 | 0.62 (0.58-0.65) | 0.57 | 263 |
+| 3 | 0.60 (0.56-0.64) | 0.57 | 264 |
+| 5 | 0.59 (0.55-0.62) | 0.57 | 265 |
+| 7 | 0.60 (0.56-0.63) | 0.56 | 268 |
+| 10 | 0.58 (0.54-0.61) | 0.56 | 268 |
 
-Open-water test sightings (>= 5 km from land): 148. AUC 0.57.
-- 2025 season, 5 days ahead: 32 of 73 sightings (44%) in the top 20% of predicted waters (chance: 20%).
-- 2026 season, 5 days ahead: 49 of 135 sightings (36%) in the top 20% of predicted waters (chance: 20%).
+Open-water test sightings (>= 5 km from land): 148. AUC 0.58.
+- 2025 season, 5 days ahead: 47 of 73 sightings (64%) in the top 20% of predicted waters (chance: 20%).
+- 2026 season, 5 days ahead: 77 of 135 sightings (57%) in the top 20% of predicted waters (chance: 20%).
 
 ## Aurelia aurita (Moon jelly)
 - Trained on: open-water sightings only (310 sighting-days, 2015-2024)
 
 | Days ahead | AUC (95% CI) | Calendar only | Test sightings |
 |---|---|---|---|
-| 0 | 0.65 (0.60-0.70) | 0.62 | 191 |
-| 1 | 0.63 (0.58-0.67) | 0.62 | 193 |
-| 3 | 0.63 (0.58-0.68) | 0.62 | 193 |
-| 5 | 0.64 (0.60-0.69) | 0.62 | 193 |
-| 7 | 0.65 (0.61-0.70) | 0.62 | 193 |
-| 10 | 0.67 (0.63-0.72) | 0.62 | 193 |
+| 0 | 0.73 (0.69-0.76) | 0.62 | 191 |
+| 1 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 3 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 5 | 0.72 (0.68-0.75) | 0.62 | 193 |
+| 7 | 0.71 (0.67-0.75) | 0.62 | 193 |
+| 10 | 0.72 (0.68-0.75) | 0.62 | 193 |
 
-Open-water test sightings (>= 5 km from land): 100. AUC 0.63.
-- 2025 season, 5 days ahead: 23 of 84 sightings (27%) in the top 20% of predicted waters (chance: 20%).
-- 2026 season, 5 days ahead: 36 of 88 sightings (41%) in the top 20% of predicted waters (chance: 20%).
+Open-water test sightings (>= 5 km from land): 100. AUC 0.70.
+- 2025 season, 5 days ahead: 48 of 84 sightings (57%) in the top 20% of predicted waters (chance: 20%).
+- 2026 season, 5 days ahead: 46 of 88 sightings (52%) in the top 20% of predicted waters (chance: 20%).

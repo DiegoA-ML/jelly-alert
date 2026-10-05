@@ -6,9 +6,10 @@ Also writes outputs/results.md: the numbers for the report, identical to what th
 import json, pickle, datetime as dt
 import numpy as np, pandas as pd
 from config import (INTERIM, OUT, RAW, DOCS, ROOT, END, MAP_LEAD, MAP_SEASON, FEATURES, FEATURE_LABELS,
-                    COMMON, DANISH, AT_SEA_MIN_KM, TRAIN_YEARS, TEST_YEARS, GRID_DLAT, GRID_DLON, LEAD_DAYS)
+                    COMMON, DANISH, AT_SEA_MIN_KM, FEATURE_SET, TRAIN_YEARS, TEST_YEARS, GRID_DLAT, GRID_DLON, LEAD_DAYS)
 from s02_audit import go_species
-from s05_build_dataset import open_env, coast_km
+from s05_build_dataset import open_env, coast_km, coast_grid, feature_values
+import basemap
 
 ALPH = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_"   # 64 levels per cell
 TOP_SHARE = 0.20      # "high-likelihood waters" = top 20% of cells that day, within the same distance band
@@ -41,7 +42,8 @@ def main():
     end = min(pd.Timestamp(END), times[-1])
     days = {y: [d for d in pd.date_range(f"{y}-{MAP_SEASON[0]}", f"{y}-{MAP_SEASON[1]}")
                 if d <= end and (d - pd.Timedelta(days=MAP_LEAD)) in times] for y in TEST_YEARS}
-    X = {d: pd.DataFrame({f: env[f].values[times.get_loc(d - pd.Timedelta(days=MAP_LEAD)), iy, ix] for f in FEATURES})
+    coast2d = coast_grid(env)
+    X = {d: feature_values(env, coast2d, times.get_loc(d - pd.Timedelta(days=MAP_LEAD)), iy, ix, [d] * len(iy), FEATURES)
          for y in days for d in days[y]}
     skill = json.loads((OUT / "skill.json").read_text())
     audit = json.loads((INTERIM / "audit_summary.json").read_text())
@@ -92,11 +94,12 @@ def main():
                 train_years=[TRAIN_YEARS[0], TRAIN_YEARS[-1]], test_years=TEST_YEARS, season=list(MAP_SEASON),
                 at_sea_km=AT_SEA_MIN_KM, grid_km=round(GRID_DLAT * 110.57, 1),
                 features=[dict(id=f, label=FEATURE_LABELS[f]) for f in FEATURES],
-                citation=citation, env=env_sources())
+                citation=citation, env=env_sources(), feature_set=FEATURE_SET,
+                selection=json.loads((INTERIM / "feature_selection.json").read_text()))
     full = dict(meta=meta, days={str(y): [d.strftime("%Y-%m-%d") for d in dl] for y, dl in days.items()},
                 cells=[[round(float(lat[a]), 4), round(float(lon[b]), 4)] for a, b in zip(iy, ix)],
                 coast=[round(float(c), 1) for c in coast], dlat=GRID_DLAT / 2, dlon=GRID_DLON / 2,
-                species=species)
+                species=species, basemap=basemap.load())
     light = dict(meta=meta, species={sp: {k: v for k, v in s.items() if k not in ("grids", "obs")}
                                      for sp, s in species.items()})
     site = ROOT / "src" / "site"

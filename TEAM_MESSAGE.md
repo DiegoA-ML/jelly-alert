@@ -1,22 +1,23 @@
-Send this once the model has run and your slides (1 to 3 and 6) are done. Fill the [brackets] first.
+Send this once the deck draft exists. Fill the [brackets] first.
 
 ---
 
 Hi all,
 
-The forecast is done and live: [WEBSITE LINK]
+The forecast is live: https://diegoa-ml.github.io/jelly-alert/
 
-It predicts where jellyfish will be in Danish waters, 5 days ahead, from free ocean and wind data. We tested it on 2025 and 2026, years it never saw: [HEADLINE FROM results.md, e.g. "X of Y real lion's mane sightings fell in the areas it flagged, where chance would be 20%"]. Unlike the EU's GoJelly model, ours doesn't need to know where jellyfish start life on the seabed, and it is checked against real sightings.
+It predicts where jellyfish will be in Danish waters 5 days ahead, using only free ocean, wind and sighting data. We tested it on the 2025 and 2026 seasons, which it never saw. The map flags one fifth of the water, and that fifth held 52% to 64% of the real sightings (a blind guess would catch 20%). For moon jelly it also clearly beats a calendar-only guess. Unlike the EU's GoJelly model, ours doesn't need to know where jellyfish start life on the seabed, and it is checked against real sightings.
 
-The midterm pitch is 3 minutes, so 6 slides. I have drafted the deck: [DECK LINK]
+New pitch format (3 minutes), for an audience of investors, mentors, customers and other startups, not the teachers. It must cover: product name, problem, who is affected, solution, value (bottom-up and top-down), team, and the biggest risk. Draft deck: [DECK LINK]
 
-- Slides 1 to 3 (title, problem, forecast): done, about 1 min 25 s.
-- Slide 4 (our fertilizer, 40 s): yours. Placeholders are in [brackets].
-- Slide 5 (how it fits together, who pays, 35 s): together, mostly yours.
-- Slide 6 (next steps, 20 s): drafted, add the fertilizer next step.
+How we pitch it as one company, not two projects: the forecast finds the jellyfish, the lab turns them into a product. Anyone using jellyfish as a raw material first needs to know where and when they will be, so the forecast is our sourcing engine. This works the same whether we go with fertilizer or salt.
 
-One heads-up for slide 4: GoJelly already showed that jellyfish fertilizer improves soil quality, so we need one line on what is new in ours (cheaper, local Danish supply, a different use?). Source: https://cordis.europa.eu/project/id/774499/reporting
+What I need from you:
+- Fertilizer or salt? Tell me which, plus one line on the process and one on who buys it.
+- Photos of you working with the jellyfish in the lab. They go on the solution and team slides, and they make us credible.
+- Your product's biggest risk in one line (cost per kg, regulation, buyers?).
+- Who presents which part. The live demo of the map is 45 seconds and I can do it.
 
-Could you fill your parts by [DATE] so we can do one timed run-through before 19 October?
+Could you send these by [DATE] so we can do one timed run-through before 19 October?
 
 [NAME]

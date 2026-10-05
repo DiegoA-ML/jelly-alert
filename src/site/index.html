@@ -66,7 +66,13 @@ ol li button span:last-child{font-weight:600}
 #slider{width:100%;margin:4px 0 0;accent-color:var(--jelly-mid)}
 .tl-legend{font-size:12px;color:var(--muted);margin-top:2px}
 :focus-visible{outline:2px solid var(--sighting);outline-offset:2px}
-.leaflet-container{background:#dfe9ec;font-family:"Barlow",sans-serif}
+.leaflet-container{background:#cfe0e5;font-family:"Barlow",sans-serif}
+.place{font:600 12px "Barlow",system-ui,sans-serif;color:#3d5a61;white-space:nowrap;text-shadow:0 0 3px #f4f1ea,0 0 3px #f4f1ea;pointer-events:none}
+.place::before{content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:#3d5a61;margin-right:4px;vertical-align:middle}
+.proof{background:var(--petrol-2);border-radius:8px;padding:14px 14px 10px;margin:4px 0 18px}
+.proof .big{font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:46px;line-height:1;color:var(--ink)}
+.proof .big small{font-size:20px;color:var(--report);margin-left:8px}
+.proof p{font-size:14px;line-height:1.45;margin:6px 0 0}
 .leaflet-popup-content{color:#0f3d47;font-size:14px}
 .leaflet-popup-content label{display:block;font-weight:500;margin-top:6px}
 .leaflet-popup-content select,.leaflet-popup-content input{width:100%;font:14px "Barlow",system-ui,sans-serif;padding:4px;margin-top:2px}
@@ -91,6 +97,8 @@ ol li button span:last-child{font-weight:600}
   <p class="lbl">Season (held out from training)</p>
   <div class="seg" id="yrSeg" role="group" aria-label="Season"></div>
 
+  <div class="proof" id="proof"></div>
+
   <p class="day" id="dayTxt"></p>
   <p class="issued" id="issuedTxt"></p>
 
@@ -102,8 +110,6 @@ ol li button span:last-child{font-weight:600}
 
   <h2>Check against reality</h2>
   <p class="t" id="dayCheck"></p>
-  <p class="t" id="seasonCheck"></p>
-  <div class="bars" id="bars" aria-hidden="true"></div>
   <p class="t muted" id="skillTxt"></p>
 
   <h2>Highest likelihood on this date</h2>
@@ -157,13 +163,20 @@ document.getElementById("explain").innerHTML =
   `<a href="about.html">How this works and where the data comes from</a>`;
 document.getElementById("foot").innerHTML =
   `Likelihood is a relative index, not a probability. Sightings: ${M.citation}. Ocean: Copernicus Marine Service. Wind: ERA5, Copernicus Climate Change Service. ` +
-  `Base map: OpenStreetMap, CARTO. <a href="about.html">Full sources and method</a>. Related work: <a href="about.html#gojelly">how this compares with the GoJelly Risk Map</a>.`;
+  `Land outline: Natural Earth. <a href="about.html">Full sources and method</a>. Related work: <a href="about.html#gojelly">how this compares with the GoJelly Risk Map</a>.`;
 
 // ---------- map ----------
 const map = L.map("map", {zoomSnap: .5}).setView([56.1, 11.1], 7);
-L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-  attribution: "&copy; OpenStreetMap contributors &copy; CARTO", subdomains: "abcd", maxZoom: 13}).addTo(map);
-const R = L.canvas({padding: .5});
+map.setMaxBounds([[50, 4], [61, 18]]).setMinZoom(7).setMaxZoom(11);
+map.attributionControl.addAttribution("Land: Natural Earth");
+// Land sits above the forecast cells so the coastline stays crisp; sightings sit above the land.
+[["land", 420], ["labels", 430], ["obs", 440]].forEach(([n, z]) => { map.createPane(n).style.zIndex = z; });
+map.getPane("labels").style.pointerEvents = "none";
+L.geoJSON(D.basemap.land, {pane: "land", interactive: false, renderer: L.canvas({pane: "land", padding: .5}),
+  style: {fillColor: "#f4f1ea", fillOpacity: 1, color: "#9fb3b8", weight: .8}}).addTo(map);
+D.basemap.places.forEach(([name, la, lo]) => L.marker([la, lo], {pane: "labels", interactive: false, keyboard: false,
+  icon: L.divIcon({className: "place", html: name, iconSize: null, iconAnchor: [3, 7]})}).addTo(map));
+const R = L.canvas({padding: .5}), RO = L.canvas({pane: "obs", padding: .5});
 const rects = D.cells.map(([la, lo]) => L.rectangle([[la - D.dlat, lo - D.dlon], [la + D.dlat, lo + D.dlon]],
   {renderer: R, stroke: false, fillOpacity: 0, interactive: false}).addTo(map));
 const obsLayer = L.layerGroup().addTo(map), repLayer = L.layerGroup().addTo(map);
@@ -235,11 +248,12 @@ function checks(g, day) {
     : `<b>This date:</b> no real sightings were recorded.`;
   const s = S.seasons[yr];
   const seasonTxt = `${fmtShort(M.season[0])} to ${fmtShort(M.season[1])} ${yr}`;
-  document.getElementById("seasonCheck").innerHTML = s.n
-    ? `<b>Whole season</b> (${seasonTxt}): <b>${s.hits} of ${s.n}</b> real sightings (${pct(s.rate)}) fell in the top ${top} of predicted waters. By pure chance it would be ${top}.`
-    : `<b>Whole season</b> (${seasonTxt}): no real sightings to check against.`;
-  document.getElementById("bars").innerHTML = s.n ? [["Jelly Alert", s.rate, "var(--jelly-mid)"], ["Chance", M.top_share, "var(--chance)"]]
-    .map(([l, v, c]) => `<div class="bar"><span>${l}</span><div class="track"><div class="fill" style="width:${v * 100}%;background:${c}"></div></div><span class="v">${pct(v)}</span></div>`).join("") : "";
+  document.getElementById("proof").innerHTML = s.n
+    ? `<div class="big">${pct(s.rate)}<small>${(s.rate / M.top_share).toFixed(1)}&times; chance</small></div>
+       <p>of real ${S.common.toLowerCase()} sightings, ${seasonTxt}, were inside the <b>${top} of the water</b> the map flagged ${M.lead} days earlier (${s.hits} of ${s.n}). A blind guess would catch ${top}.</p>
+       <div class="bars" aria-hidden="true">${[["Jelly Alert", s.rate, "var(--jelly-mid)"], ["Blind guess", M.top_share, "var(--chance)"]]
+        .map(([l, v, c]) => `<div class="bar"><span>${l}</span><div class="track"><div class="fill" style="width:${v * 100}%;background:${c}"></div></div><span class="v">${pct(v)}</span></div>`).join("")}</div>`
+    : `<p>No real sightings in ${seasonTxt} to check against.</p>`;
   const r = S.skill.find(x => x.lead === M.lead), t = r.test, ow = r.test_open_water;
   document.getElementById("skillTxt").innerHTML =
     `Across all ${M.test_years.join(" and ")} sightings (${t.n_pres}), the model scores AUC <b>${t.auc.toFixed(2)}</b> ` +
@@ -258,7 +272,7 @@ function draw() {
   obsLayer.clearLayers();
   const t = new Date(day + "T12:00:00");
   D.species[sp].obs.filter(o => Math.abs(new Date(o[0] + "T12:00:00") - t) <= 864e5).forEach(o =>
-    L.circleMarker([o[1], o[2]], {renderer: R, radius: 6, color: "#fff", weight: 2, fillColor: "#1fc4d8", fillOpacity: 1})
+    L.circleMarker([o[1], o[2]], {renderer: RO, pane: "obs", radius: 6, color: "#fff", weight: 2, fillColor: "#1fc4d8", fillOpacity: 1})
       .bindTooltip(`Real sighting, ${fmt(o[0])}`).addTo(obsLayer));
   document.getElementById("dayTxt").textContent = fmt(day);
   document.getElementById("issuedTxt").textContent = `Predicted on ${fmt(shift(day, -M.lead))}, ${M.lead} days ahead`;

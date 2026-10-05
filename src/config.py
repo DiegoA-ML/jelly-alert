@@ -47,9 +47,25 @@ CMEMS_PHY_PRODUCTS = [
 ]
 CMEMS_VARS = ["thetao", "so", "uo", "vo"]
 
-# Provisional feature set: physics + wind, identical for every year.
-FEATURES = ["sst", "sss", "cur", "u10", "v10", "sst_trend7"]
+# Ocean and wind variables stored on the grid (data/interim/env.nc).
+GRID_VARS = ["sst", "sss", "cur", "u10", "v10", "sst_trend7"]
+# Candidate feature sets. The one used is chosen by s06a_select_features.py with leave-one-year-out
+# cross-validation inside 2015-2024 ONLY. The 2025-2026 test seasons play no part in the choice.
+FEATURE_SETS = {
+    "ocean+wind": GRID_VARS,
+    "ocean+wind+season": GRID_VARS + ["doy_sin", "doy_cos"],
+    "ocean+wind(3d)+season": GRID_VARS + ["u10_3d", "v10_3d", "doy_sin", "doy_cos"],
+    "ocean+wind+season+distance to land": GRID_VARS + ["doy_sin", "doy_cos", "coast_km"],
+}
+CANDIDATES = list(dict.fromkeys(f for v in FEATURE_SETS.values() for f in v))
+FEATURE_SET = "ocean+wind+season+distance to land"      # set by s06a_select_features.py; see outputs/feature_selection.md
+FEATURES = FEATURE_SETS[FEATURE_SET]
 FEATURE_LABELS = {
+    "doy_sin": "Time of year (season, part 1)",
+    "doy_cos": "Time of year (season, part 2)",
+    "u10_3d": "Wind west-east, 3-day average",
+    "v10_3d": "Wind south-north, 3-day average",
+    "coast_km": "Distance from land",
     "sst": "Sea surface temperature",
     "sss": "Surface salinity",
     "cur": "Surface current speed",

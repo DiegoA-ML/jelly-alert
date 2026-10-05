@@ -51,6 +51,11 @@ ol.steps li{margin-bottom:8px}
 .imp .v{text-align:right;font-variant-numeric:tabular-nums}
 code{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:1px 5px;font-size:15px}
 a{color:var(--series)}
+.why{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 6px}
+@media (max-width:600px){.why{grid-template-columns:1fr}}
+.why div{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px}
+.why b{display:block;font-size:22px;margin-bottom:4px}
+.why span{font-size:14px;color:var(--text-2);line-height:1.45}
 </style>
 </head>
 <body>
@@ -61,6 +66,9 @@ a{color:var(--series)}
 </div></header>
 <main>
   <p class="muted" style="margin-top:22px">A study prototype for DTU course 25352 Blue Bioeconomy Innovation, not a product. Built <span id="built"></span>.</p>
+
+  <h2>Why it is worth building</h2>
+  <div class="why" id="why"></div>
 
   <h2>What was tested</h2>
   <p>The model learns from past years and is then tested on years it never saw. The map only shows the test years, because showing years the model learned from would be showing it the answers.</p>
@@ -117,6 +125,17 @@ const fmtS = s => new Date("2000-" + s + "T12:00:00").toLocaleDateString("en-GB"
 const pct = x => Math.round(x * 100) + "%";
 document.querySelectorAll(".leadN").forEach(e => e.textContent = M.lead);
 $("built").textContent = fmtD(M.built);
+
+// ---- why it is worth building: computed from the same results as the map ----
+const best = SP.map(sp => { const ss = Object.values(D.species[sp].seasons).filter(s => s.n);
+  return {sp, lo: Math.min(...ss.map(s => s.rate)), hi: Math.max(...ss.map(s => s.rate))}; });
+const lo = Math.min(...best.map(b => b.lo)), hi = Math.max(...best.map(b => b.hi));
+$("why").innerHTML = [
+  [`${pct(lo)} to ${pct(hi)}`, `of real sightings in each test season fell inside the ${pct(M.top_share)} of water the map flagged ${M.lead} days earlier. A blind guess catches ${pct(M.top_share)}.`],
+  [`Public data only`, `Sightings, ocean and wind data are free and open. No survey ship, no sensors, no need to find the seabed polyp beds where jellyfish start life.`],
+  [`Tested, not assumed`, `Scored on two whole seasons (${M.test_years.join(", ")}) it never saw, against a calendar-only guess.`],
+  [`Every day, 0 to ${M.leads[M.leads.length - 1]} days ahead`, `A map for a specific date, updated as new ocean data arrives. Users can add their own sightings.`]
+].map(([h, t]) => `<div><b>${h}</b><span>${t}</span></div>`).join("");
 
 // ---- what was tested ----
 let yrs = "";
@@ -184,7 +203,7 @@ $("sources").innerHTML = `<tr><th>What</th><th>Source</th><th>Used for</th></tr>
   <tr><td>Other sea life sightings</td><td>Same GBIF download: jellyfish relatives, comb jellies, starfish and relatives</td><td>Where people were looking (corrects for observer effort)</td></tr>
   <tr><td>Sea temperature, salinity, currents</td><td>Copernicus Marine Service, Baltic Sea physics, daily, surface layer.<br>${envRows}</td><td>Ocean conditions before each sighting and each map day</td></tr>
   <tr><td>Wind</td><td><a href="https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels">ERA5</a>, Copernicus Climate Change Service, 10 m wind</td><td>Wind pushes jellyfish near the surface</td></tr>
-  <tr><td>Base map</td><td>OpenStreetMap contributors, CARTO</td><td>Background map only</td></tr>`;
+  <tr><td>Land outline and place names</td><td><a href="https://www.naturalearthdata.com">Natural Earth</a> 1:10m (public domain)</td><td>Background map only</td></tr>`;
 
 // ---- method ----
 $("steps").innerHTML = [
@@ -192,7 +211,9 @@ $("steps").innerHTML = [
   `Every sighting is placed in its cell. For each one, the model looks up the ocean and wind conditions in that cell a set number of days before (0 to ${M.leads[M.leads.length - 1]}).`,
   `The model (MaxEnt, a standard method in ecology for sighting data) compares conditions before jellyfish sightings with conditions before sightings of other sea life by the same kind of observers. That way it learns what is special about jellyfish conditions, not where people tend to go.`,
   `For the map, every cell gets a score every day, from conditions ${M.lead} days earlier. The colour shows the score relative to other cells.`,
-  `Inputs (provisional): ${M.features.map(f => f.label.toLowerCase()).join(", ")}.`
+  `Inputs: ${M.features.map(f => f.label.toLowerCase()).join(", ")}. The time of year comes from the forecast date, which is known in advance; everything else is measured ${M.lead} days before.`,
+  `How the inputs were chosen: ${M.selection.sets.length} input sets were compared by holding out one training year at a time (${M.train_years[0]} to ${M.train_years[1]} only). ` +
+    `The best, "${M.selection.chosen}", scored ${M.selection.auc[M.selection.chosen].toFixed(2)} against ${M.selection.calendar.toFixed(2)} for the calendar. The ${M.test_years.join(" and ")} test seasons played no part in the choice and were scored once, at the end.`
 ].map(s => `<li>${s}</li>`).join("");
 $("importance").innerHTML = SP.map(sp => {
   const imp = D.species[sp].importance; if (!imp) return "";
@@ -209,7 +230,8 @@ $("limits").innerHTML = [
   `<b>Where, not how many.</b> The model predicts where jellyfish are likely, not how dense a bloom is.`,
   `<b>Relative, not a probability.</b> Colours rank waters against each other on the same day.`,
   envLabels.length > 1 ? `<b>Two versions of the ocean data.</b> The ${envLabels.map(l => l.toLowerCase()).join(" and ")} come from the same Copernicus model system run in different ways. Part of any drop in skill in the test years can come from that switch.` : "",
-  `<b>Few inputs.</b> Six physical and wind inputs. Food supply (plankton), oxygen and where young jellyfish (polyps) live are not included yet.`,
+  `<b>Lion's mane is harder.</b> For lion's mane the model's score is only slightly above the calendar's, so most of its skill is in <i>where</i> (the map) rather than in day-to-day timing. Moon jelly is clearly ahead of the calendar.`,
+  `<b>Few inputs.</b> Physical, wind and season inputs only. Food supply (plankton), oxygen and where young jellyfish (polyps) live are not included yet.`,
   `<b>Reports stay in the browser.</b> Sightings entered on the map are saved only on that device and are not used by the model.`
 ].filter(Boolean).map(s => `<li style="margin-bottom:10px;max-width:68ch">${s}</li>`).join("");
 </script>
